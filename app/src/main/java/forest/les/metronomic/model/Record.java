@@ -1,5 +1,7 @@
 package forest.les.metronomic.model;
 
+import com.google.gson.Gson;
+
 import org.simpleframework.xml.Attribute;
 import org.simpleframework.xml.Element;
 import org.simpleframework.xml.ElementList;
@@ -22,13 +24,18 @@ public class Record
     @Element(name = "Nominal", required = false)
     public String nominal;
 
+//    @Override
+//    public String toString() {
+//        return "Record{" +
+//                "date='" + date + '\'' +
+//                ", ID='" + ID + '\'' +
+//                ", value='" + value + '\'' +
+//                ", nominal='" + nominal + '\'' +
+//                '}';
+//    }
+
     @Override
     public String toString() {
-        return "Record{" +
-                "date='" + date + '\'' +
-                ", ID='" + ID + '\'' +
-                ", value='" + value + '\'' +
-                ", nominal='" + nominal + '\'' +
-                '}';
+        return new Gson().toJson(this).toString();
     }
 }

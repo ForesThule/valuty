@@ -3,6 +3,7 @@ package forest.les.metronomic.ui;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.support.design.widget.BottomNavigationView;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
@@ -10,28 +11,22 @@ import android.support.v7.widget.RecyclerView;
 import android.view.MenuItem;
 
 import com.github.piasy.rxandroidaudio.PlayConfig;
-import com.jakewharton.rxbinding2.support.design.widget.RxBottomNavigationView;
-import com.jakewharton.rxbinding2.support.v7.widget.RxRecyclerView;
 import com.mikepenz.fastadapter.IItem;
 import com.mikepenz.fastadapter.commons.adapters.FastItemAdapter;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
-import java.security.Timestamp;
-import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Currency;
 import java.util.List;
 
 import butterknife.ButterKnife;
 import forest.les.metronomic.R;
+import forest.les.metronomic.data.Storage;
 import forest.les.metronomic.databinding.ActivityMainBinding;
 import forest.les.metronomic.events.EventValCurse;
-import forest.les.metronomic.model.ValCurs;
-import forest.les.metronomic.model.Valute;
+import forest.les.metronomic.model.ValPeriodWrapper;
 import forest.les.metronomic.network.WorkerIntentService;
-import io.reactivex.Observable;
 import timber.log.Timber;
 
 public class MainActivity extends AppCompatActivity {
@@ -63,6 +58,12 @@ public class MainActivity extends AppCompatActivity {
 
         binding.navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
 
+        binding.navigation.setSelectedItemId(R.id.dynamic_menu_item);
+
+        ActionBar supportActionBar = getSupportActionBar();
+
+        supportActionBar.setTitle("VALUTY");
+
 
         RecyclerView recycler = binding.recycler;
 
@@ -77,26 +78,20 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void setLayout1() {
+    private void setDynamicRates() {
 
-        ActivityMainBinding binding = DataBindingUtil.setContentView(this, R.layout.activity_main);
+        SampleIDynamicItem sampleIDynamicItem = new SampleIDynamicItem();
 
-        binding.navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
+        ValPeriodWrapper periodDataAsync = Storage.getPeriodDataAsync(this);
 
-        adapter = new FastItemAdapter();
+        Timber.i(String.valueOf(periodDataAsync));
 
-        initRecycler();
     }
 
-    private void setLayout2() {
+    private void calcuLate() {
 
-        ActivityMainBinding binding = DataBindingUtil.setContentView(this, R.layout.l1);
 
-        binding.navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
 
-        adapter = new FastItemAdapter();
-
-        initRecycler();
     }
 
     private void initRecycler() {
@@ -110,11 +105,11 @@ public class MainActivity extends AppCompatActivity {
 
     public void navigate(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.layout_2_menu_item:
-                setLayout1();
+            case R.id.dynamic_menu_item:
+                setDynamicRates();
                 break;
-            case R.id.layout1_menu_item:
-                setLayout2();
+            case R.id.calc_menu_item:
+                calcuLate();
                 break;
             case R.id.money_rate_menu_item:
                 getCurrentValuteCurses();
@@ -124,11 +119,11 @@ public class MainActivity extends AppCompatActivity {
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
             = item -> {
         switch (item.getItemId()) {
-            case R.id.layout_2_menu_item:
-                setLayout1();
+            case R.id.dynamic_menu_item:
+                setDynamicRates();
                 return true;
-            case R.id.layout1_menu_item:
-                setLayout2();
+            case R.id.calc_menu_item:
+                calcuLate();
                 return true;
             case R.id.money_rate_menu_item:
                 getCurrentValuteCurses();

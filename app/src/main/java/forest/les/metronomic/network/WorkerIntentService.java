@@ -4,11 +4,18 @@ import android.app.IntentService;
 import android.content.Intent;
 import android.content.Context;
 
+import com.squareup.moshi.Json;
+
 import org.greenrobot.eventbus.EventBus;
 
+import java.util.HashMap;
+
+import forest.les.metronomic.data.Storage;
+import forest.les.metronomic.model.Item;
 import forest.les.metronomic.model.ValCurs;
 import forest.les.metronomic.events.EventValCurse;
 import forest.les.metronomic.model.ValCursPeriod;
+import forest.les.metronomic.model.ValPeriodWrapper;
 import forest.les.metronomic.model.Valuta;
 import forest.les.metronomic.model.Valute;
 import forest.les.metronomic.network.api.CbrApi;
@@ -106,8 +113,6 @@ public class WorkerIntentService extends IntentService {
         Timber.d(param1);
 
 
-
-
         api.getValutesFullData().enqueue(new Callback<Valuta>() {
             @Override
             public void onResponse(Call<Valuta> call, Response<Valuta> response) {
@@ -117,12 +122,37 @@ public class WorkerIntentService extends IntentService {
 
                 Valuta body = response.body();
 
-                api.getRatesOnPeriod("01/01/2016","01/01/2017",body.items.get(1).parentCode)
+                Observable.fromIterable(body.items)
+                        .map(item -> {
+
+                            Item result = item;
+                            String trim = result.parentCode.trim();
+                            result.parentCode = trim;
+                            return result;
+                        })
+                        .subscribe(item -> Timber.i(item.toString()));
+
+                Item item = body.items.get(1);
+
+                String parentCode = item.parentCode;
+
+                api.getRatesOnPeriod("01/01/2016", "01/01/2017", parentCode)
                         .enqueue(new Callback<ValCursPeriod>() {
                             @Override
                             public void onResponse(Call<ValCursPeriod> call, Response<ValCursPeriod> response) {
 
                                 Timber.i(response.body().toString());
+
+                                HashMap<Item, ValCursPeriod> itemValCursPeriodHashMap = new HashMap<>();
+
+                                itemValCursPeriodHashMap.put(item, response.body());
+
+                                Timber.i(String.valueOf(itemValCursPeriodHashMap));
+
+                                ValPeriodWrapper valPeriodWrapper = new ValPeriodWrapper(itemValCursPeriodHashMap);
+
+                                Storage.savePeriodData(WorkerIntentService.this, itemValCursPeriodHashMap);
+
                             }
 
                             @Override

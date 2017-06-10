@@ -1,5 +1,7 @@
 package forest.les.metronomic.model;
 
+import com.google.gson.Gson;
+
 import org.simpleframework.xml.Attribute;
 import org.simpleframework.xml.Element;
 import org.simpleframework.xml.Root;
@@ -34,17 +36,22 @@ public class Valute
 
         public Currency currency;
 
+
         @Override
         public String toString() {
-            return "Valute{" +
-                    "value='" + value + '\'' +
-                    ", id='" + id + '\'' +
-                    ", name='" + name + '\'' +
-                    ", nominal='" + nominal + '\'' +
-                    ", charcode='" + charcode + '\'' +
-                    ", numcode='" + numcode + '\'' +
-                    ", currency='" + currency + '\'' +
-                    '}';
+            return new Gson().toJson(this).toString();
         }
+//        @Override
+//        public String toString() {
+//            return "Valute{" +
+//                    "value='" + value + '\'' +
+//                    ", id='" + id + '\'' +
+//                    ", name='" + name + '\'' +
+//                    ", nominal='" + nominal + '\'' +
+//                    ", charcode='" + charcode + '\'' +
+//                    ", numcode='" + numcode + '\'' +
+//                    ", currency='" + currency + '\'' +
+//                    '}';
+//        }
 
     }

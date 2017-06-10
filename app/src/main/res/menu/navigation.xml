@@ -2,18 +2,20 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
-        android:id="@+id/layout1_menu_item"
-        android:title="1" />
+        android:id="@+id/calc_menu_item"
+        android:icon="@drawable/calculator"
+        android:title="valuta calc" />
         <!--android:icon="@drawable/ic_stop_black_24dp"-->
 
     <item
-        android:id="@+id/layout_2_menu_item"
-        android:title="2" />
+        android:id="@+id/dynamic_menu_item"
+        android:icon="@drawable/ic_timeline_black_24dp"
+        android:title="dynamic" />
         <!--android:icon="@drawable/"-->
 
     <item
         android:id="@+id/money_rate_menu_item"
         android:icon="@drawable/ic_attach_money_black_24dp"
-        android:title="money rate" />
+        android:title="rate" />
 
 </menu>

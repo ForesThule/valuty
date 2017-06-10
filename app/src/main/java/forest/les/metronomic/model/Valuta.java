@@ -21,11 +21,11 @@ public class Valuta
     @Override
     public String toString() {
 
-        return "Valuta{" +
-                "name='" + name + '\'' +
-                ", items=" + items +
-                '}';
+//        return "Valuta{" +
+//                "name='" + name + '\'' +
+//                ", items=" + items +
+//                '}';
 
-//        return new com.google.gson.Gson().toJson(this);
+        return new com.google.gson.Gson().toJson(this);
     }
 }

@@ -1,5 +1,7 @@
 package forest.les.metronomic.model;
 
+import com.google.gson.Gson;
+
 import org.simpleframework.xml.Attribute;
 import org.simpleframework.xml.ElementList;
 import org.simpleframework.xml.Root;
@@ -26,13 +28,18 @@ public class ValCurs
     @ElementList(inline = true, required = false)
     public List<Record> records;
 
+//    @Override
+//    public String toString() {
+//        return "ValCurs{" +
+//                "date='" + date + '\'' +
+//                ", name='" + name + '\'' +
+//                ", valute=" + valute +
+//                ", records=" + records +
+//                '}';
+//    }
+
     @Override
     public String toString() {
-        return "ValCurs{" +
-                "date='" + date + '\'' +
-                ", name='" + name + '\'' +
-                ", valute=" + valute +
-                ", records=" + records +
-                '}';
+        return new Gson().toJson(this).toString();
     }
 }
