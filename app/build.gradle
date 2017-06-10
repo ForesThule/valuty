@@ -1,0 +1,127 @@
+//noinspection GradleCompatible
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 25
+    buildToolsVersion "25.0.3"
+    defaultConfig {
+        applicationId "forest.les.metronomic"
+        minSdkVersion 21
+        targetSdkVersion 25
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        vectorDrawables.useSupportLibrary = true
+
+        dataBinding {
+            enabled = true
+        }
+
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+
+
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+dependencies {
+
+    compile 'com.squareup.okhttp3:okhttp:3.8.0'
+
+    compile 'com.squareup.okio:okio:1.13.0'
+
+    compile 'com.squareup.retrofit2:adapter-rxjava2:2.2.0'
+
+    compile 'com.squareup.okhttp3:logging-interceptor:3.0.1'
+
+
+    compile('com.squareup.retrofit2:converter-simplexml:2.3.0'){
+        exclude group: 'xpp3', module: 'xpp3'
+        exclude group: 'stax', module: 'stax-api'
+        exclude group: 'stax', module: 'stax'
+    }
+
+    compile 'com.squareup.retrofit2:retrofit:2.2.0'
+    compile 'com.google.code.gson:gson:2.7'
+    compile 'com.squareup.retrofit2:converter-gson:2.1.0'
+
+    compile 'com.squareup.moshi:moshi:1.5.0'
+
+    compile 'com.jakewharton:butterknife:8.5.1'
+    annotationProcessor 'com.jakewharton:butterknife-compiler:8.6.0'
+    compile 'com.jakewharton.timber:timber:4.5.1'
+    compile 'com.jakewharton:butterknife:8.4.0'
+
+
+//    Platform bindings:
+
+    compile 'com.jakewharton.rxbinding2:rxbinding:2.0.0'
+//    'support-v4' library bindings:
+
+    compile 'com.jakewharton.rxbinding2:rxbinding-support-v4:2.0.0'
+//    'appcompat-v7' library bindings:
+
+    compile 'com.jakewharton.rxbinding2:rxbinding-appcompat-v7:2.0.0'
+//    'design' library bindings:
+
+    compile 'com.jakewharton.rxbinding2:rxbinding-design:2.0.0'
+//    'recyclerview-v7' library bindings:
+
+    compile 'com.jakewharton.rxbinding2:rxbinding-recyclerview-v7:2.0.0'
+//    'leanback-v17' library bindings:
+
+    compile 'com.jakewharton.rxbinding2:rxbinding-leanback-v17:2.0.0'
+
+
+    compile 'io.reactivex.rxjava2:rxjava:2.1.0'
+
+    compile 'org.greenrobot:eventbus:3.0.0'
+
+
+    compile('com.mikepenz:fastadapter:2.5.2@aar') {
+        transitive = true
+    }
+
+    compile 'com.mikepenz:fastadapter-commons:2.5.2@aar'
+    compile 'com.mikepenz:fastadapter-extensions:2.5.2@aar'
+    compile 'com.mikepenz:materialize:1.0.1@aar'
+
+    compile 'com.github.piasy:rxandroidaudio:1.5.2'
+    compile 'com.github.piasy:AudioProcessor:1.5.2'
+
+    compile 'io.reactivex.rxjava2:rxandroid:2.0.1'
+    compile 'com.tbruyelle.rxpermissions2:rxpermissions:0.9.1@aar'
+
+
+    compile 'com.trello.rxlifecycle2:rxlifecycle:2.0.1'
+    compile 'com.trello.rxlifecycle2:rxlifecycle-android:2.0.1'
+    compile 'com.trello.rxlifecycle2:rxlifecycle-components:2.0.1'
+
+
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+
+        exclude group: 'com.google.code.findbugs'
+
+    })
+
+    //noinspection GradleCompatible
+    compile 'com.android.support:recyclerview-v7:25.3.1'
+    compile 'com.android.support:support-vector-drawable:25.3.1'
+    compile 'com.android.support:appcompat-v7:25.3.1'
+    compile 'com.android.support:cardview-v7:25.3.1'
+    compile 'com.android.support:design:25.3.1'
+
+    testCompile 'junit:junit:4.12'
+}

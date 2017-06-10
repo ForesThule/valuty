@@ -1,0 +1,92 @@
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+//
+//buildscript {
+//    repositories {
+//        jcenter()
+//    }
+//    dependencies {
+//        classpath 'com.android.tools.build:gradle:2.3.2'
+//
+//        // NOTE: Do not place your application dependencies here; they belong
+//        // in the individual module build.gradle files
+//    }
+//}
+//
+////allprojects {
+////    repositories {
+////        jcenter()
+////    }
+////}
+//
+//
+//allprojects {
+//    repositories {
+//        jcenter()
+//
+//        maven {
+//            url  "http://dl.bintray.com/piasy/maven"
+//        }
+//    }
+//}
+//
+//
+//
+//task clean(type: Delete) {
+//    delete rootProject.buildDir
+//}
+
+
+
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:2.4.0-alpha7'
+
+        classpath 'com.github.dcendents:android-maven-gradle-plugin:1.5'
+        classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.1"
+    }
+    configurations.classpath.exclude group: 'com.android.tools.external.lombok'
+}
+
+allprojects {
+    repositories {
+        maven {
+            url  "http://dl.bintray.com/piasy/maven"
+        }
+        jcenter()
+        maven { url "http://dl.bintray.com/tbruyelle/tbruyelle" }
+    }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}
+
+ext {
+    userName = 'Lesforest'
+    developer = [
+            id   : 'thule',
+            name : 'VE',
+            email: 'lesforest@gmai.com'
+    ]
+    license = [
+            id  : 'MIT',
+            name: 'The MIT License (MIT)',
+            url : 'http://opensource.org/licenses/MIT'
+    ]
+    groupName = 'com.github.foresthule'
+    artifactName = 'METRONOMIC'
+    artifactDescription = 'Sound meter app.'
+    artifactLabels = ['rx', 'android', 'audio']
+    releaseVersionCode = 14
+    releaseVersionName = '1.5.2'
+
+    androidCompileSdkVersion = 25
+    androidBuildToolsVersion = '25.0.2'
+    androidSupportSdkVersion = '25.3.0'
+    rxJava2Version = "2.0.7"
+    minSdkVersion = 14
+    targetSdkVersion = 25
+}
