@@ -22,7 +22,4 @@ public interface CbrApi {
     @GET("/scripts/XML_dynamic.asp")
     Call<ValCursPeriod> getRatesOnPeriod(@Query("date_req1") String date_req1, @Query("date_req2") String date_req2, @Query("VAL_NM_RQ") String VAL_NM_RQ);
 
-
-
-
 }
