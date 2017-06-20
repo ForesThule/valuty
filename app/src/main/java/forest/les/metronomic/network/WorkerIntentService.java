@@ -4,10 +4,15 @@ import android.app.IntentService;
 import android.content.Intent;
 import android.content.Context;
 
+import com.anupcowkur.reservoir.Reservoir;
+import com.orhanobut.hawk.Hawk;
 import com.squareup.moshi.Json;
 
 import org.greenrobot.eventbus.EventBus;
 
+import java.security.Timestamp;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 
 import forest.les.metronomic.data.Storage;
@@ -178,12 +183,11 @@ public class WorkerIntentService extends IntentService {
                 ValCurs body = response.body();
                 Timber.d("response: %s", body);
 
-                for (Valute valute : body.valute) {
+                    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MM-yyyy-hh");
+                    String format = simpleDateFormat.format(new Date());
 
-                    Timber.i("valute: %s", valute);
+                    Hawk.put(format, response.body());
 
-
-                }
 
                 EventBus.getDefault().post(new EventValCurse(body));
             }

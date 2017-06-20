@@ -1,5 +1,13 @@
 //noinspection GradleCompatible
 apply plugin: 'com.android.application'
+apply plugin: 'com.neenbedankt.android-apt'
+apply plugin: 'me.tatarka.retrolambda'
+
+
+repositories {
+    jcenter()
+    mavenCentral()
+}
 
 android {
     compileSdkVersion 25
@@ -17,6 +25,9 @@ android {
             enabled = true
         }
 
+        multiDexEnabled true
+
+
     }
     buildTypes {
         release {
@@ -24,6 +35,7 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -81,7 +93,6 @@ dependencies {
     compile 'com.jakewharton.rxbinding2:rxbinding-leanback-v17:2.0.0'
 
 
-    compile 'io.reactivex.rxjava2:rxjava:2.1.0'
 
     compile 'org.greenrobot:eventbus:3.0.0'
 
@@ -94,9 +105,13 @@ dependencies {
     compile 'com.mikepenz:fastadapter-extensions:2.5.2@aar'
     compile 'com.mikepenz:materialize:1.0.1@aar'
 
-    compile 'com.github.piasy:rxandroidaudio:1.5.2'
-    compile 'com.github.piasy:AudioProcessor:1.5.2'
 
+    compile 'com.anupcowkur:reservoir:3.1.0'
+
+
+    compile 'com.orhanobut:hawk:2.0.1'
+
+    compile 'io.reactivex.rxjava2:rxjava:2.1.0'
     compile 'io.reactivex.rxjava2:rxandroid:2.0.1'
     compile 'com.tbruyelle.rxpermissions2:rxpermissions:0.9.1@aar'
 

@@ -40,25 +40,40 @@
 buildscript {
     repositories {
         jcenter()
+        mavenCentral()
+
     }
     dependencies {
 
 
-        classpath 'com.android.tools.build:gradle:2.4.0-alpha7'
+        classpath 'com.android.tools.build:gradle:2.3.2'
 
-        classpath 'com.github.dcendents:android-maven-gradle-plugin:1.5'
-        classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.1"
+        classpath 'com.neenbedankt.gradle.plugins:android-apt:1.8'
+        classpath 'me.tatarka:gradle-retrolambda:3.2.3'
+        classpath 'me.tatarka.retrolambda.projectlombok:lombok.ast:0.2.3.a2'
+
+
+
+//
+//        classpath 'com.android.tools.build:gradle:2.3.3'
+//
+//        classpath 'com.neenbedankt.gradle.plugins:android-apt:1.8'
+//        classpath 'me.tatarka:gradle-retrolambda:3.2.3'
+//        classpath 'me.tatarka.retrolambda.projectlombok:lombok.ast:0.2.3.a2'
+//
+//        classpath 'com.github.dcendents:android-maven-gradle-plugin:1.5'
+//        classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.1"
     }
-    configurations.classpath.exclude group: 'com.android.tools.external.lombok'
 }
 
 allprojects {
     repositories {
-        maven {
-            url  "http://dl.bintray.com/piasy/maven"
-        }
+
         jcenter()
         maven { url "http://dl.bintray.com/tbruyelle/tbruyelle" }
+
+        maven { url "https://jitpack.io" }
+
     }
 }
 

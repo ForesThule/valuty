@@ -23,8 +23,9 @@ import com.jakewharton.rxbinding2.widget.RxTextView;
 
 import java.util.regex.Pattern;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
 import forest.les.metronomic.R;
-import forest.les.metronomic.databinding.ActivityLoginBinding;
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
@@ -35,22 +36,28 @@ import static android.util.Patterns.EMAIL_ADDRESS;
 
 public class LoginActivity extends AppCompatActivity {
 
-    private ActivityLoginBinding binding;
+    @BindView(R.id.et_login) EditText etLogin;
+    @BindView(R.id.et_password) EditText ePassword;
+    BottomNavigationView navigation;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        setContentView(R.layout.activity_login);
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_login);
+        setContentView(R.layout.activity_login);
+        ButterKnife.bind(this);
 
-        RxTextView.textChanges(binding.etLogin)
+        etLogin = (EditText) findViewById(R.id.et_login);
+        navigation = (BottomNavigationView) findViewById(R.id.nav_login);
+
+
+        RxTextView.textChanges(etLogin)
                 .map(t -> EMAIL_ADDRESS.matcher(t).matches())
                 .map(b -> b ? Color.BLACK : Color.RED)
-                .subscribe(c -> binding.etLogin.setTextColor(c));
+                .subscribe(c -> etLogin.setTextColor(c));
 
 
-        binding.navigation.setOnNavigationItemSelectedListener(item -> {
+        navigation.setOnNavigationItemSelectedListener(item -> {
 
             startActivity(new Intent(getApplicationContext(), MainActivity.class));
             return false;

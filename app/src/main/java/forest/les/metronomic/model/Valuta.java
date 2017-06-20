@@ -18,14 +18,14 @@ public class Valuta
     @Attribute(required = false)
     private String ID;
 
-    @Override
-    public String toString() {
-
-//        return "Valuta{" +
-//                "name='" + name + '\'' +
-//                ", items=" + items +
-//                '}';
-
-        return new com.google.gson.Gson().toJson(this);
-    }
+//    @Override
+//    public String toString() {
+//
+////        return "Valuta{" +
+////                "name='" + name + '\'' +
+////                ", items=" + items +
+////                '}';
+//
+////        return new com.google.gson.Gson().toJson(this);
+////    }
 }

@@ -5,6 +5,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.mikepenz.fastadapter.items.AbstractItem;
+import com.mikepenz.materialize.holder.StringHolder;
 
 import java.util.List;
 
@@ -36,9 +37,19 @@ public class SampleItem extends AbstractItem<SampleItem, SampleItem.ViewHolder> 
     	
     	//bind our data
         //set the text for the name
-        viewHolder.name.setText(name);
-        viewHolder.value.setText(Double.toString(value));
+        TextView name = viewHolder.name;
+        TextView value = viewHolder.value;
+
+
+        if (this.value != 0) {
+            value.setText(Double.toString(this.value));
+        }
+        if (this.name != null) {
+
+            name.setText(this.name);
+        }
         //set the text for the description or hide
+
     }
 
     //reset the view here (this is an optional method, but recommended)
@@ -60,7 +71,7 @@ public class SampleItem extends AbstractItem<SampleItem, SampleItem.ViewHolder> 
 
         private View view;
 
-        @BindView(R.id.tv_money_name) TextView name;
+        TextView name;
 
         @BindView(R.id.tv_money_value) TextView value;
 
@@ -68,6 +79,9 @@ public class SampleItem extends AbstractItem<SampleItem, SampleItem.ViewHolder> 
             super(view);
             ButterKnife.bind(this, view);
             this.view = view;
+
+            name = (TextView) view.findViewById(R.id.tv_money_name);
+            value = (TextView) view.findViewById(R.id.tv_money_value);
         }
     }
 }

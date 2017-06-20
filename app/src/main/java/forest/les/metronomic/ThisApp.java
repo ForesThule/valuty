@@ -3,6 +3,8 @@ package forest.les.metronomic;
 import android.app.Application;
 import android.content.Context;
 
+import com.orhanobut.hawk.Hawk;
+
 import forest.les.metronomic.network.api.CbrApi;
 import forest.les.metronomic.util.Helper;
 import timber.log.Timber;
@@ -17,7 +19,10 @@ public class ThisApp extends Application {
 
     @Override
     public void onCreate() {
+
         super.onCreate();
+
+        Hawk.init(this).build();
 
         api = Helper.getCbrApi();
 

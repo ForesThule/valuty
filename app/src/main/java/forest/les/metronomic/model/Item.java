@@ -52,8 +52,8 @@ public class Item {
 //                    '}';
 //        }
 
-    @Override
-    public String toString() {
-        return new Gson().toJson(this).toString();
-    }
+//    @Override
+//    public String toString() {
+//        return new Gson().toJson(this).toString();
+//    }
 }

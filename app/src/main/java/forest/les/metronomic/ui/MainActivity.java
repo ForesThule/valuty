@@ -10,31 +10,43 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.MenuItem;
 
-import com.github.piasy.rxandroidaudio.PlayConfig;
 import com.mikepenz.fastadapter.IItem;
 import com.mikepenz.fastadapter.commons.adapters.FastItemAdapter;
+import com.orhanobut.hawk.Hawk;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Currency;
+import java.util.Date;
 import java.util.List;
 
+import butterknife.BindView;
 import butterknife.ButterKnife;
 import forest.les.metronomic.R;
 import forest.les.metronomic.data.Storage;
-import forest.les.metronomic.databinding.ActivityMainBinding;
 import forest.les.metronomic.events.EventValCurse;
+import forest.les.metronomic.model.ValCurs;
 import forest.les.metronomic.model.ValPeriodWrapper;
+import forest.les.metronomic.model.Valute;
 import forest.les.metronomic.network.WorkerIntentService;
+import io.reactivex.Observable;
 import timber.log.Timber;
 
 public class MainActivity extends AppCompatActivity {
 
-    private PlayConfig playConfig;
-    private  ActivityMainBinding binding;
+//    private PlayConfig playConfig;
+//    private ActivityMainBinding binding;
     private List<IItem> iItems;
     private FastItemAdapter adapter;
+
+    private RecyclerView recycler;
+
+    BottomNavigationView navigation;
+
 
     @Override
     protected void onStart() {
@@ -52,20 +64,26 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
 
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_main);
+        navigation = (BottomNavigationView) findViewById(R.id.nav_main);
+        recycler = (RecyclerView) findViewById(R.id.recycler);
 
-        binding.navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
 
-        binding.navigation.setSelectedItemId(R.id.dynamic_menu_item);
+
+
+
+//        binding = DataBindingUtil.setContentView(this, R.layout.activity_main);
+//
+        navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
+
+        navigation.setSelectedItemId(R.id.dynamic_menu_item);
 
         ActionBar supportActionBar = getSupportActionBar();
 
         supportActionBar.setTitle("VALUTY");
 
-
-        RecyclerView recycler = binding.recycler;
 
         adapter = new FastItemAdapter();
 
@@ -95,7 +113,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initRecycler() {
-        RecyclerView recycler = binding.recycler;
 
         recycler.setLayoutManager(new LinearLayoutManager(this));
 
@@ -147,17 +164,15 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    public PlayConfig getPlayConfig() {
-        return PlayConfig
-                .res(this, R.raw.click)
-                .looping(false)
-                .build();
-
-    }
+//    public PlayConfig getPlayConfig() {
+//        return PlayConfig
+//                .res(this, R.raw.click)
+//                .looping(false)
+//                .build();
+//
+//    }
 
     private void play(String play) {
-
-        binding = DataBindingUtil.setContentView(this, R.layout.l2);
 
 
 //
@@ -224,7 +239,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void stop() {
 
-        binding = DataBindingUtil.setContentView(this, R.layout.l1);
 
 
         //        getRxAudioPlayer().stopPlay();
@@ -232,44 +246,61 @@ public class MainActivity extends AppCompatActivity {
 
     @Subscribe
     public void showValCurses(EventValCurse valCurseEvent) {
-//
-//        ValCurs valCurs = valCurseEvent.valCurs;
-//
-//        iItems = new ArrayList<>();
-//
-//
-//        Observable.fromIterable(valCurs.valute)
-//                .filter(valute -> {
-//
-//                    return Currency.getAvailableCurrencies().contains(Currency.getInstance(valute.charcode));
-//
-//                })
-//                .map(valute -> {
-//                    Valute newVal = valute;
-//                    newVal.currency = Currency.getInstance(valute.charcode);
-//                    return newVal;
-//                })
-//                .map(valute -> {
-//
-//                    SampleItem sampleItem = new SampleItem();
-//
-//                    sampleItem.name = valute.currency.getDisplayName();
-//                    String replace = valute.value.replace(",", ".");
-//                    sampleItem.value = Double.parseDouble(replace);
-//
-//                    return sampleItem;
-//                })
-//                .doOnComplete(() -> adapter.set(iItems))
-//                .subscribe(e -> {
-//
-//                    iItems.add(e);
-//                });
-//
-//
-//        for (Valute valute : valCurs.valute) {
-//
-//        }
-//        Timber.d("valCurseEvent: %s", valCurs);
+
+
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MM-yyyy-hh");
+        String format = simpleDateFormat.format(new Date());
+
+        if (Hawk.contains(format)){
+            ValCurs valCurs = Hawk.get(format);
+
+            Timber.i(format);
+
+        }
+
+        ValCurs valCurs = valCurseEvent.valCurs;
+
+        iItems = new ArrayList<>();
+
+
+        Observable.fromIterable(valCurs.valute)
+                .filter(valute -> {
+
+                    Currency instance;
+                    try {
+                        instance = Currency.getInstance(valute.charcode);
+                    } catch (Exception e){
+
+                        return false;
+                    }
+                    return Currency.getAvailableCurrencies().contains(instance);
+                })
+                .map(valute -> {
+                    Valute newVal = valute;
+                    newVal.currency = Currency.getInstance(valute.charcode);
+                    return newVal;
+                })
+                .map(valute -> {
+
+                    SampleItem sampleItem = new SampleItem();
+
+                    sampleItem.name = valute.currency.getDisplayName();
+                    String replace = valute.value.replace(",", ".");
+                    sampleItem.value = Double.parseDouble(replace);
+
+                    return sampleItem;
+                })
+                .doOnComplete(() -> adapter.set(iItems))
+                .subscribe(e -> {
+
+                    iItems.add(e);
+                });
+
+
+        for (Valute valute : valCurs.valute) {
+
+        }
+        Timber.d("valCurseEvent: %s", valCurs);
 
     }
 
