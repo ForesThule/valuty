@@ -3,6 +3,7 @@ package forest.les.metronomic.network.api;
 import forest.les.metronomic.model.ValCurs;
 import forest.les.metronomic.model.ValCursPeriod;
 import forest.les.metronomic.model.Valuta;
+import io.reactivex.Observable;
 import retrofit2.Call;
 import retrofit2.http.GET;
 import retrofit2.http.Query;
@@ -21,5 +22,8 @@ public interface CbrApi {
 
     @GET("/scripts/XML_dynamic.asp")
     Call<ValCursPeriod> getRatesOnPeriod(@Query("date_req1") String date_req1, @Query("date_req2") String date_req2, @Query("VAL_NM_RQ") String VAL_NM_RQ);
+
+    @GET("/scripts/XML_dynamic.asp")
+    Observable<ValCursPeriod> getPeriodRx(@Query("date_req1") String date_req1, @Query("date_req2") String date_req2, @Query("VAL_NM_RQ") String VAL_NM_RQ);
 
 }

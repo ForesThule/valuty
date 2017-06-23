@@ -8,12 +8,81 @@ import org.simpleframework.xml.Root;
 
 import java.util.Currency;
 
+import io.realm.RealmObject;
+import io.realm.annotations.PrimaryKey;
+
 /**
  * Created by root on 04.06.17.
  */
 
 @Root(name = "Item")
-public class Item {
+public class Item extends RealmObject {
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getEngName() {
+        return engName;
+    }
+
+    public void setEngName(String engName) {
+        this.engName = engName;
+    }
+
+    public String getNominal() {
+        return nominal;
+    }
+
+    public void setNominal(String nominal) {
+        this.nominal = nominal;
+    }
+
+    public String getParentCode() {
+        return parentCode;
+    }
+
+    public void setParentCode(String parentCode) {
+        this.parentCode = parentCode;
+    }
+
+    public String getISO_Num_Code() {
+        return ISO_Num_Code;
+    }
+
+    public void setISO_Num_Code(String ISO_Num_Code) {
+        this.ISO_Num_Code = ISO_Num_Code;
+    }
+
+    public String getIsoCharcode() {
+        return isoCharcode;
+    }
+
+    public void setIsoCharcode(String isoCharcode) {
+        this.isoCharcode = isoCharcode;
+    }
+
+    public Currency getCurrency() {
+        return currency;
+    }
+
+    public void setCurrency(Currency currency) {
+        this.currency = currency;
+    }
+
+    @PrimaryKey
+
     @Attribute(name = "ID")
     public String id;
 
@@ -39,7 +108,10 @@ public class Item {
     public Currency currency;
 
 //        @Override
-//        public String toString() {
+//        public String toString() {//    @Override
+//    public String toString() {
+//        return new Gson().toJson(this).toString();
+//    }
 //            return "Item{" +
 //                    "id='" + id + '\'' +
 //                    ", name='" + name + '\'' +
@@ -52,8 +124,8 @@ public class Item {
 //                    '}';
 //        }
 
-//    @Override
-//    public String toString() {
-//        return new Gson().toJson(this).toString();
-//    }
+    @Override
+    public String toString() {
+        return new Gson().toJson(this).toString();
+    }
 }

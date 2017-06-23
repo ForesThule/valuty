@@ -7,6 +7,7 @@ import com.orhanobut.hawk.Hawk;
 
 import forest.les.metronomic.network.api.CbrApi;
 import forest.les.metronomic.util.Helper;
+import io.realm.Realm;
 import timber.log.Timber;
 
 /**
@@ -15,12 +16,15 @@ import timber.log.Timber;
 
 public class ThisApp extends Application {
 
-    private static CbrApi api;
+    public static CbrApi api;
+    public Realm realm;
 
     @Override
     public void onCreate() {
 
         super.onCreate();
+
+        realm = Realm.getDefaultInstance();
 
         Hawk.init(this).build();
 

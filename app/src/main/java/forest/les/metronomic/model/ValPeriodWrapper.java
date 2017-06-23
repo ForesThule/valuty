@@ -1,5 +1,7 @@
 package forest.les.metronomic.model;
 
+import com.google.gson.Gson;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -17,5 +19,10 @@ public class ValPeriodWrapper {
     public ValPeriodWrapper(Map<Item, ValCursPeriod> period) {
 
         this.period = period;
+    }
+
+    @Override
+    public String toString() {
+        return new Gson().toJson(this).toString();
     }
 }

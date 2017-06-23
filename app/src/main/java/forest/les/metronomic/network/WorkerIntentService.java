@@ -14,8 +14,11 @@ import java.security.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Map;
 
+import forest.les.metronomic.ThisApp;
 import forest.les.metronomic.data.Storage;
+import forest.les.metronomic.events.EventDynamicCurse;
 import forest.les.metronomic.model.Item;
 import forest.les.metronomic.model.ValCurs;
 import forest.les.metronomic.events.EventValCurse;
@@ -26,6 +29,9 @@ import forest.les.metronomic.model.Valute;
 import forest.les.metronomic.network.api.CbrApi;
 import forest.les.metronomic.util.Helper;
 import io.reactivex.Observable;
+import io.reactivex.Scheduler;
+import io.reactivex.schedulers.Schedulers;
+import io.realm.Realm;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -40,6 +46,7 @@ import timber.log.Timber;
  */
 public class WorkerIntentService extends IntentService {
 
+
     private CbrApi api;
     private Context ctx;
 
@@ -51,6 +58,7 @@ public class WorkerIntentService extends IntentService {
     // TODO: Rename parameters
     private static final String EXTRA_PARAM1 = "forest.les.metronomic.extra.PARAM1";
     private static final String EXTRA_PARAM2 = "forest.les.metronomic.extra.PARAM2";
+    private Realm realm;
 
     public WorkerIntentService() {
         super("WorkerIntentService");
@@ -88,7 +96,10 @@ public class WorkerIntentService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
 
+
         ctx = this;
+
+        realm = ThisApp.get(this).realm;
 
         if (null == api) {
             api = Helper.getCbrApi();
@@ -109,6 +120,13 @@ public class WorkerIntentService extends IntentService {
         }
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        realm.close();
+
+    }
+
     /**
      * Handle action Foo in the provided background thread with the provided
      * parameters.
@@ -117,10 +135,22 @@ public class WorkerIntentService extends IntentService {
 
         Timber.d(param1);
 
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MM-yyyy-hh");
+        String format = simpleDateFormat.format(new Date());
 
         api.getValutesFullData().enqueue(new Callback<Valuta>() {
             @Override
             public void onResponse(Call<Valuta> call, Response<Valuta> response) {
+
+
+                realm.beginTransaction();
+
+                Valuta valutaOnThatHour = realm.createObject(Valuta.class);
+
+                realm.copyToRealm(valutaOnThatHour);
+
+                realm.commitTransaction();
+
 
                 Timber.i("onResponse");
                 Timber.i(String.valueOf(response.body()));
@@ -138,33 +168,51 @@ public class WorkerIntentService extends IntentService {
                         .subscribe(item -> Timber.i(item.toString()));
 
                 Item item = body.items.get(1);
-
                 String parentCode = item.parentCode;
 
-                api.getRatesOnPeriod("01/01/2016", "01/01/2017", parentCode)
-                        .enqueue(new Callback<ValCursPeriod>() {
-                            @Override
-                            public void onResponse(Call<ValCursPeriod> call, Response<ValCursPeriod> response) {
 
-                                Timber.i(response.body().toString());
 
-                                HashMap<Item, ValCursPeriod> itemValCursPeriodHashMap = new HashMap<>();
 
-                                itemValCursPeriodHashMap.put(item, response.body());
+                api.getPeriodRx("01/01/2016", "01/01/2017", parentCode)
+                        .subscribeOn(Schedulers.io())
+                        .map(valCursPeriod -> valCursPeriod.records)
+                        .flatMap(records -> Observable.fromIterable(records)
+                                .map(record -> record.date)
 
-                                Timber.i(String.valueOf(itemValCursPeriodHashMap));
+                        )
 
-                                ValPeriodWrapper valPeriodWrapper = new ValPeriodWrapper(itemValCursPeriodHashMap);
+                        .subscribe(records -> Timber.i(String.valueOf(records)), t -> Timber.e(t));
 
-                                Storage.savePeriodData(WorkerIntentService.this, itemValCursPeriodHashMap);
 
-                            }
 
-                            @Override
-                            public void onFailure(Call<ValCursPeriod> call, Throwable throwable) {
 
-                            }
-                        });
+
+//
+//                api.getRatesOnPeriod("01/01/2016", "01/01/2017", parentCode)
+//                        .enqueue(new Callback<ValCursPeriod>() {
+//                            @Override
+//                            public void onResponse(Call<ValCursPeriod> call, Response<ValCursPeriod> response) {
+//
+//                                Timber.i(response.body().toString());
+//
+//                                HashMap<Item, ValCursPeriod> itemValCursPeriodHashMap = new HashMap<>();
+//
+//                                itemValCursPeriodHashMap.put(item, response.body());
+//
+//                                ValPeriodWrapper valPeriodWrapper = new ValPeriodWrapper(itemValCursPeriodHashMap);
+//
+//                                Timber.i(itemValCursPeriodHashMap.toString());
+//
+//                                Hawk.put("dynamic", valPeriodWrapper);
+//
+//                                EventBus.getDefault().post(new EventDynamicCurse("OK"));
+//                            }
+//
+//                            @Override
+//                            public void onFailure(Call<ValCursPeriod> call, Throwable throwable) {
+//
+//                            }
+//                        });
 
             }
 
@@ -176,28 +224,6 @@ public class WorkerIntentService extends IntentService {
         });
 
 
-        api.getRatesOnData(param1).enqueue(new Callback<ValCurs>() {
-            @Override
-            public void onResponse(Call<ValCurs> call, Response<ValCurs> response) {
-
-                ValCurs body = response.body();
-                Timber.d("response: %s", body);
-
-                    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MM-yyyy-hh");
-                    String format = simpleDateFormat.format(new Date());
-
-                    Hawk.put(format, response.body());
-
-
-                EventBus.getDefault().post(new EventValCurse(body));
-            }
-
-            @Override
-            public void onFailure(Call<ValCurs> call, Throwable throwable) {
-                Timber.w("throwable %s", throwable.fillInStackTrace());
-
-            }
-        });
 
     }
 

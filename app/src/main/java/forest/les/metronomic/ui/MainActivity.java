@@ -28,6 +28,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import forest.les.metronomic.R;
 import forest.les.metronomic.data.Storage;
+import forest.les.metronomic.events.EventDynamicCurse;
 import forest.les.metronomic.events.EventValCurse;
 import forest.les.metronomic.model.ValCurs;
 import forest.les.metronomic.model.ValPeriodWrapper;
@@ -96,11 +97,12 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+
     private void setDynamicRates() {
 
         SampleIDynamicItem sampleIDynamicItem = new SampleIDynamicItem();
 
-        ValPeriodWrapper periodDataAsync = Storage.getPeriodDataAsync(this);
+        ValPeriodWrapper periodDataAsync = Hawk.get("dynamic");
 
         Timber.i(String.valueOf(periodDataAsync));
 
@@ -244,8 +246,28 @@ public class MainActivity extends AppCompatActivity {
         //        getRxAudioPlayer().stopPlay();
     }
 
+
+    @Subscribe
+    public void showDynamic(EventDynamicCurse e){
+
+        Hawk.init(this);
+        Hawk.get("dynamic");
+
+        while (Hawk.get("dynamic")) {
+
+            Timber.i("while");
+        }
+
+        Timber.i(e.valCurs);
+
+
+    }
+
+
+
     @Subscribe
     public void showValCurses(EventValCurse valCurseEvent) {
+
 
 
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MM-yyyy-hh");
