@@ -16,7 +16,7 @@ import io.realm.annotations.PrimaryKey;
  */
 
 @Root(name = "Item")
-public class Item extends RealmObject {
+public class Item {
     public String getId() {
         return id;
     }
@@ -73,16 +73,6 @@ public class Item extends RealmObject {
         this.isoCharcode = isoCharcode;
     }
 
-    public Currency getCurrency() {
-        return currency;
-    }
-
-    public void setCurrency(Currency currency) {
-        this.currency = currency;
-    }
-
-    @PrimaryKey
-
     @Attribute(name = "ID")
     public String id;
 
@@ -103,9 +93,6 @@ public class Item extends RealmObject {
 
     @Element(name = "ISO_Char_Code", required = false)
     public String isoCharcode;
-
-
-    public Currency currency;
 
 //        @Override
 //        public String toString() {//    @Override

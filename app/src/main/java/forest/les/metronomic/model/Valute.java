@@ -34,8 +34,6 @@ public class Valute
         @Element(name = "NumCode")
         public String numcode;
 
-        public Currency currency;
-
 //
         @Override
         public String toString() {

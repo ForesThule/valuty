@@ -4,32 +4,18 @@ import android.app.IntentService;
 import android.content.Intent;
 import android.content.Context;
 
-import com.anupcowkur.reservoir.Reservoir;
-import com.orhanobut.hawk.Hawk;
-import com.squareup.moshi.Json;
-
-import org.greenrobot.eventbus.EventBus;
-
-import java.security.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
 import forest.les.metronomic.ThisApp;
-import forest.les.metronomic.data.Storage;
-import forest.les.metronomic.events.EventDynamicCurse;
 import forest.les.metronomic.model.Item;
+import forest.les.metronomic.model.Record;
 import forest.les.metronomic.model.ValCurs;
-import forest.les.metronomic.events.EventValCurse;
-import forest.les.metronomic.model.ValCursPeriod;
-import forest.les.metronomic.model.ValPeriodWrapper;
 import forest.les.metronomic.model.Valuta;
 import forest.les.metronomic.model.Valute;
 import forest.les.metronomic.network.api.CbrApi;
 import forest.les.metronomic.util.Helper;
 import io.reactivex.Observable;
-import io.reactivex.Scheduler;
 import io.reactivex.schedulers.Schedulers;
 import io.realm.Realm;
 import retrofit2.Call;
@@ -110,12 +96,11 @@ public class WorkerIntentService extends IntentService {
             if (ACTION_FOO.equals(action)) {
                 final String param1 = intent.getStringExtra(EXTRA_PARAM1);
 
-                handleActionFoo(param1);
+                getValCurse(param1);
 
             } else if (ACTION_BAZ.equals(action)) {
                 final String param1 = intent.getStringExtra(EXTRA_PARAM1);
                 final String param2 = intent.getStringExtra(EXTRA_PARAM2);
-                handleActionBaz(param1, param2);
             }
         }
     }
@@ -131,98 +116,60 @@ public class WorkerIntentService extends IntentService {
      * Handle action Foo in the provided background thread with the provided
      * parameters.
      */
-    private void handleActionFoo(String param1) {
+    private void getValCurse(String param1) {
 
         Timber.d(param1);
 
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MM-yyyy-hh");
         String format = simpleDateFormat.format(new Date());
 
-        api.getValutesFullData().enqueue(new Callback<Valuta>() {
+        api.getRatesOnData(format).enqueue(new Callback<ValCurs>() {
             @Override
-            public void onResponse(Call<Valuta> call, Response<Valuta> response) {
+            public void onResponse(Call<ValCurs> call, Response<ValCurs> response) {
 
 
-                realm.beginTransaction();
+//                realm.beginTransaction();
+//
+//                Valuta valutaOnThatHour = realm.createObject(Valuta.class);
+//
+//                realm.copyToRealm(valutaOnThatHour);
+//
+//                realm.commitTransaction();
 
-                Valuta valutaOnThatHour = realm.createObject(Valuta.class);
+                ValCurs body = response.body();
+                for (Valute valute : body.valute) {
+                    Timber.i("vALUTE: %s", valute.toString());
 
-                realm.copyToRealm(valutaOnThatHour);
+                }
 
-                realm.commitTransaction();
+
+                api.getValutesFullData().enqueue(new Callback<Valuta>() {
+                    @Override
+                    public void onResponse(Call<Valuta> call, Response<Valuta> response) {
+
+                        Timber.i("VALUTA %s", response.body());
+                    }
+
+                    @Override
+                    public void onFailure(Call<Valuta> call, Throwable throwable) {
+                        Timber.d("ERROR %s", throwable.getMessage());
+
+                    }
+                });
+
+//                api.getPeriodRx("01/01/2017", "01/02/2017", )
 
 
                 Timber.i("onResponse");
-                Timber.i(String.valueOf(response.body()));
-
-                Valuta body = response.body();
-
-                Observable.fromIterable(body.items)
-                        .map(item -> {
-
-                            Item result = item;
-                            String trim = result.parentCode.trim();
-                            result.parentCode = trim;
-                            return result;
-                        })
-                        .subscribe(item -> Timber.i(item.toString()));
-
-                Item item = body.items.get(1);
-                String parentCode = item.parentCode;
-
-
-
-
-                api.getPeriodRx("01/01/2016", "01/01/2017", parentCode)
-                        .subscribeOn(Schedulers.io())
-                        .map(valCursPeriod -> valCursPeriod.records)
-                        .flatMap(records -> Observable.fromIterable(records)
-                                .map(record -> record.date)
-
-                        )
-
-                        .subscribe(records -> Timber.i(String.valueOf(records)), t -> Timber.e(t));
-
-
-
-
-
-//
-//                api.getRatesOnPeriod("01/01/2016", "01/01/2017", parentCode)
-//                        .enqueue(new Callback<ValCursPeriod>() {
-//                            @Override
-//                            public void onResponse(Call<ValCursPeriod> call, Response<ValCursPeriod> response) {
-//
-//                                Timber.i(response.body().toString());
-//
-//                                HashMap<Item, ValCursPeriod> itemValCursPeriodHashMap = new HashMap<>();
-//
-//                                itemValCursPeriodHashMap.put(item, response.body());
-//
-//                                ValPeriodWrapper valPeriodWrapper = new ValPeriodWrapper(itemValCursPeriodHashMap);
-//
-//                                Timber.i(itemValCursPeriodHashMap.toString());
-//
-//                                Hawk.put("dynamic", valPeriodWrapper);
-//
-//                                EventBus.getDefault().post(new EventDynamicCurse("OK"));
-//                            }
-//
-//                            @Override
-//                            public void onFailure(Call<ValCursPeriod> call, Throwable throwable) {
-//
-//                            }
-//                        });
 
             }
 
             @Override
-            public void onFailure(Call<Valuta> call, Throwable throwable) {
+            public void onFailure(Call<ValCurs> call, Throwable throwable) {
 
                 Timber.d("ERROR %s", throwable.getMessage());
             }
         });
-
 
 
     }
@@ -231,8 +178,8 @@ public class WorkerIntentService extends IntentService {
      * Handle action Baz in the provided background thread with the provided
      * parameters.
      */
-    private void handleActionBaz(String param1, String param2) {
-        // TODO: Handle action Baz
-        throw new UnsupportedOperationException("Not yet implemented");
+    private void getPeriodCurse(String param1, String param2) {
+
+
     }
 }

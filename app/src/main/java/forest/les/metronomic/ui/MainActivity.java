@@ -299,14 +299,13 @@ public class MainActivity extends AppCompatActivity {
                 })
                 .map(valute -> {
                     Valute newVal = valute;
-                    newVal.currency = Currency.getInstance(valute.charcode);
+                    Currency.getInstance(valute.charcode);
                     return newVal;
                 })
                 .map(valute -> {
 
                     SampleItem sampleItem = new SampleItem();
 
-                    sampleItem.name = valute.currency.getDisplayName();
                     String replace = valute.value.replace(",", ".");
                     sampleItem.value = Double.parseDouble(replace);
 

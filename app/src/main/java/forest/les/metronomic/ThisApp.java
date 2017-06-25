@@ -24,6 +24,8 @@ public class ThisApp extends Application {
 
         super.onCreate();
 
+        realm.init(this);
+
         realm = Realm.getDefaultInstance();
 
         Hawk.init(this).build();

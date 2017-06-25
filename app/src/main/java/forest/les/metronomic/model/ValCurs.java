@@ -25,9 +25,6 @@ public class ValCurs
     public List<Valute> valute;
 
 
-    @ElementList(inline = true, required = false)
-    public List<Record> records;
-
 //    @Override
 //    public String toString() {
 //        return "ValCurs{" +

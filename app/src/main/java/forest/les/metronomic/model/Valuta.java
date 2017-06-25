@@ -6,12 +6,13 @@ import org.simpleframework.xml.Root;
 
 import java.util.List;
 
+import io.realm.RealmList;
 import io.realm.RealmModel;
 import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;
 
 @Root(name = "Valuta")
-public class Valuta extends RealmObject {
+public class Valuta {
     @Attribute(name = "name")
     public String name;
 
@@ -42,18 +43,17 @@ public class Valuta extends RealmObject {
     @ElementList(inline = true, required = false)
     public List<Item> items;
 
-    @PrimaryKey
     @Attribute(required = false)
-    private String ID;
+    public String ID;
 
-//    @Override
-//    public String toString() {
-//
-////        return "Valuta{" +
-////                "name='" + name + '\'' +
-////                ", items=" + items +
-////                '}';
-//
-////        return new com.google.gson.Gson().toJson(this);
-////    }
+    @Override
+    public String toString() {
+
+//        return "Valuta{" +
+//                "name='" + name + '\'' +
+//                ", items=" + items +
+//                '}';
+
+        return new com.google.gson.Gson().toJson(this);
+    }
 }
