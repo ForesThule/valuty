@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.Context;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 
 import forest.les.metronomic.ThisApp;
@@ -13,11 +14,15 @@ import forest.les.metronomic.model.Record;
 import forest.les.metronomic.model.ValCurs;
 import forest.les.metronomic.model.Valuta;
 import forest.les.metronomic.model.Valute;
+import forest.les.metronomic.model.realm.RealmString;
+import forest.les.metronomic.model.realm.RealmValCurs;
 import forest.les.metronomic.network.api.CbrApi;
 import forest.les.metronomic.util.Helper;
 import io.reactivex.Observable;
 import io.reactivex.schedulers.Schedulers;
 import io.realm.Realm;
+import io.realm.RealmList;
+import io.realm.RealmResults;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -108,7 +113,6 @@ public class WorkerIntentService extends IntentService {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        realm.close();
 
     }
 
@@ -128,18 +132,50 @@ public class WorkerIntentService extends IntentService {
             public void onResponse(Call<ValCurs> call, Response<ValCurs> response) {
 
 
-//                realm.beginTransaction();
-//
-//                Valuta valutaOnThatHour = realm.createObject(Valuta.class);
-//
-//                realm.copyToRealm(valutaOnThatHour);
-//
-//                realm.commitTransaction();
 
                 ValCurs body = response.body();
                 for (Valute valute : body.valute) {
                     Timber.i("vALUTE: %s", valute.toString());
 
+                }
+
+
+                realm.beginTransaction();
+
+                ValCurs valCurs = response.body();
+
+                RealmValCurs realmValCurs = new RealmValCurs();
+
+                String date = valCurs.date;
+                RealmString realmDate = new RealmString();
+                realmDate.setString(date);
+                realmValCurs.setDate(realmDate);
+
+
+                String name = valCurs.name;
+                RealmString realmName = new RealmString();
+                realmName.setString(name);
+                realmValCurs.setName(realmName);
+
+                RealmList<RealmString> valutes = new RealmList<>();
+
+                for (Valute valute : valCurs.valute) {
+                    RealmString realmString = new RealmString();
+                    realmString.setString(valute.charcode);
+                    valutes.add(realmString);
+                }
+                realmValCurs.setValutes(valutes);
+
+                realm.copyToRealm(realmValCurs);
+
+                realm.commitTransaction();
+
+
+                RealmResults<RealmValCurs> all = realm.where(RealmValCurs.class).findAll();
+
+                for (RealmValCurs curs : all) {
+
+                    Timber.i("REALM CURS: %s",curs);
                 }
 
 
