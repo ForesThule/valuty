@@ -18,6 +18,7 @@ import forest.les.metronomic.model.ValPeriodWrapper;
 import forest.les.metronomic.util.Cv;
 import io.reactivex.Observable;
 import io.reactivex.schedulers.Schedulers;
+import io.realm.Realm;
 import timber.log.Timber;
 
 /**
@@ -25,6 +26,13 @@ import timber.log.Timber;
  */
 
 public class Storage {
+
+    public static void getRealmData(Context context){
+
+        Realm realm = ThisApp.get(context).realm;
+
+    }
+
 
     public synchronized static ValPeriodWrapper getPeriodDataAsync(Context ctx) {
 

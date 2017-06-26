@@ -6,10 +6,6 @@ import org.simpleframework.xml.Root;
 
 import java.util.List;
 
-import io.realm.RealmList;
-import io.realm.RealmModel;
-import io.realm.RealmObject;
-import io.realm.annotations.PrimaryKey;
 
 @Root(name = "Valuta")
 public class Valuta {

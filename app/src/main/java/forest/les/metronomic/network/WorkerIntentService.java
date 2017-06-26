@@ -7,6 +7,7 @@ import android.content.Context;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import forest.les.metronomic.ThisApp;
 import forest.les.metronomic.model.Item;
@@ -14,11 +15,15 @@ import forest.les.metronomic.model.Record;
 import forest.les.metronomic.model.ValCurs;
 import forest.les.metronomic.model.Valuta;
 import forest.les.metronomic.model.Valute;
+import forest.les.metronomic.model.realm.RealmRecord;
 import forest.les.metronomic.model.realm.RealmString;
 import forest.les.metronomic.model.realm.RealmValCurs;
+import forest.les.metronomic.model.realm.RealmValCursPeriod;
 import forest.les.metronomic.network.api.CbrApi;
 import forest.les.metronomic.util.Helper;
 import io.reactivex.Observable;
+import io.reactivex.Scheduler;
+import io.reactivex.functions.Action;
 import io.reactivex.schedulers.Schedulers;
 import io.realm.Realm;
 import io.realm.RealmList;
@@ -122,23 +127,15 @@ public class WorkerIntentService extends IntentService {
      */
     private void getValCurse(String param1) {
 
-        Timber.d(param1);
 
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MM-yyyy-hh");
         String format = simpleDateFormat.format(new Date());
-
+        Timber.d(format);
         api.getRatesOnData(format).enqueue(new Callback<ValCurs>() {
             @Override
             public void onResponse(Call<ValCurs> call, Response<ValCurs> response) {
 
-
-
                 ValCurs body = response.body();
-                for (Valute valute : body.valute) {
-                    Timber.i("vALUTE: %s", valute.toString());
-
-                }
-
 
                 realm.beginTransaction();
 
@@ -170,30 +167,17 @@ public class WorkerIntentService extends IntentService {
 
                 realm.commitTransaction();
 
-
                 RealmResults<RealmValCurs> all = realm.where(RealmValCurs.class).findAll();
+                if (all == null) {
+                    realm.beginTransaction();
+                    realm.delete(RealmValCurs.class);
+                    realm.commitTransaction();
+                }
 
                 for (RealmValCurs curs : all) {
 
-                    Timber.i("REALM CURS: %s",curs);
+                    Timber.i("REALM CURS: %s", curs);
                 }
-
-
-                api.getValutesFullData().enqueue(new Callback<Valuta>() {
-                    @Override
-                    public void onResponse(Call<Valuta> call, Response<Valuta> response) {
-
-                        Timber.i("VALUTA %s", response.body());
-                    }
-
-                    @Override
-                    public void onFailure(Call<Valuta> call, Throwable throwable) {
-                        Timber.d("ERROR %s", throwable.getMessage());
-
-                    }
-                });
-
-//                api.getPeriodRx("01/01/2017", "01/02/2017", )
 
 
                 Timber.i("onResponse");
@@ -208,14 +192,102 @@ public class WorkerIntentService extends IntentService {
         });
 
 
+        getBasicData();
+
+    }
+
+    private void getBasicData() {
+
+        api.getValutesFullData().enqueue(new Callback<Valuta>() {
+            @Override
+            public void onResponse(Call<Valuta> call, Response<Valuta> response) {
+
+                Valuta valuta = response.body();
+
+                List<Item> items = valuta.getItems();
+                for (int i = 0; i < items.size(); i++) {
+                    Item item = items.get(i);
+
+                    if (i==2){
+                        getPeriodCurse("01/01/2000", "01/02/2017", item.parentCode);
+
+                    }
+
+
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Valuta> call, Throwable throwable) {
+                Timber.d("ERROR %s", throwable.getMessage());
+
+            }
+        });
+
     }
 
     /**
      * Handle action Baz in the provided background thread with the provided
      * parameters.
      */
-    private void getPeriodCurse(String param1, String param2) {
+    private void getPeriodCurse(String param1, String param2, String param3) {
 
+        RealmResults<RealmValCurs> all = realm.where(RealmValCurs.class).findAll();
+        Timber.i("REALM_VAL_CURS COUNT: %d",all.size());
+
+
+        api.getPeriodRx(param1, param2, param3.trim())
+
+                .subscribeOn(Schedulers.io())
+                .map(valCursPeriod -> {
+
+                    Observable.fromIterable(valCursPeriod.records)
+                            .subscribe(record -> {
+
+                                handleValCursPeriod(record);
+
+                            });
+
+                    RealmValCursPeriod realmValCursPeriod = new RealmValCursPeriod();
+
+                    realmValCursPeriod.setName(valCursPeriod.name);
+                    realmValCursPeriod.date1 = valCursPeriod.date1;
+                    realmValCursPeriod.date2 = valCursPeriod.date2;
+
+                    Observable.fromIterable(valCursPeriod.records)
+
+                            .map(record -> {
+
+                                RealmRecord realmRecord = new RealmRecord();
+                                realmRecord.setDate(record.date);
+                                realmRecord.value = record.value;
+                                realmRecord.nominal = record.nominal;
+                                realmRecord.setID(record.getID());
+
+                                return realmRecord;
+
+                            }).subscribe(realmValCursPeriod.records::add);
+
+
+                    return realmValCursPeriod;
+                })
+//                .flatMap(valCursPeriod -> Observable.fromIterable(valCursPeriod.records))
+                .subscribe(valCursPeriod -> {
+
+//                    realm.beginTransaction();
+//                    realm.copyToRealmOrUpdate(valCursPeriod);
+//                    realm.commitTransaction();
+
+                    Timber.i("%s - %s", valCursPeriod.getDate1(), valCursPeriod.getName());
+
+                }, Throwable::getMessage);
+
+    }
+
+    private void handleValCursPeriod(Record valCursPeriod) {
+
+
+        Timber.i("handleValCursPeriod = %s", valCursPeriod);
 
     }
 }

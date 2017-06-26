@@ -1,18 +1,13 @@
-package forest.les.metronomic.model;
-
-import com.google.gson.Gson;
+package forest.les.metronomic.model.realm;
 
 import org.simpleframework.xml.Attribute;
 import org.simpleframework.xml.Element;
-import org.simpleframework.xml.ElementList;
 import org.simpleframework.xml.Root;
-
-import java.util.List;
 
 import io.realm.RealmObject;
 
 @Root(name = "Record")
-public class Record
+public class RealmRecord extends RealmObject
 {
     @Attribute(name = "Date",required = false)
     public String date;
@@ -68,8 +63,8 @@ public class Record
 //                '}';
 //    }
 
-    @Override
-    public String toString() {
-        return new Gson().toJson(this).toString();
-    }
+//    @Override
+//    public String toString() {
+//        return new Gson().toJson(this).toString();
+//    }
 }
