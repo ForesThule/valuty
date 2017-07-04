@@ -1,6 +1,5 @@
 package forest.les.metronomic.ui;
 
-import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v7.app.ActionBar;
@@ -24,17 +23,23 @@ import java.util.Currency;
 import java.util.Date;
 import java.util.List;
 
-import butterknife.BindView;
 import butterknife.ButterKnife;
 import forest.les.metronomic.R;
-import forest.les.metronomic.data.Storage;
+import forest.les.metronomic.ThisApp;
 import forest.les.metronomic.events.EventDynamicCurse;
+import forest.les.metronomic.events.EventRealmValCurse;
 import forest.les.metronomic.events.EventValCurse;
 import forest.les.metronomic.model.ValCurs;
 import forest.les.metronomic.model.ValPeriodWrapper;
 import forest.les.metronomic.model.Valute;
+import forest.les.metronomic.model.realm.RealmString;
+import forest.les.metronomic.model.realm.RealmValCurs;
+import forest.les.metronomic.model.realm.RealmValuta;
 import forest.les.metronomic.network.WorkerIntentService;
 import io.reactivex.Observable;
+import io.realm.Realm;
+import io.realm.RealmQuery;
+import io.realm.RealmResults;
 import timber.log.Timber;
 
 public class MainActivity extends AppCompatActivity {
@@ -47,6 +52,9 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView recycler;
 
     BottomNavigationView navigation;
+
+    private Realm realm;
+
 
 
     @Override
@@ -65,6 +73,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        realm  = ThisApp.get(this).realm;
+
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
 
@@ -72,14 +82,11 @@ public class MainActivity extends AppCompatActivity {
         recycler = (RecyclerView) findViewById(R.id.recycler);
 
 
-
-
-
 //        binding = DataBindingUtil.setContentView(this, R.layout.activity_main);
 //
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
 
-        navigation.setSelectedItemId(R.id.dynamic_menu_item);
+        navigation.setSelectedItemId(R.id.money_rate_menu_item);
 
         ActionBar supportActionBar = getSupportActionBar();
 
@@ -101,10 +108,10 @@ public class MainActivity extends AppCompatActivity {
     private void setDynamicRates() {
 
         SampleIDynamicItem sampleIDynamicItem = new SampleIDynamicItem();
+        sampleIDynamicItem.name = "DYNAMIC";
 
-        ValPeriodWrapper periodDataAsync = Hawk.get("dynamic");
-
-        Timber.i(String.valueOf(periodDataAsync));
+        adapter.clear();
+        adapter.add(sampleIDynamicItem);
 
     }
 
@@ -158,13 +165,46 @@ public class MainActivity extends AppCompatActivity {
         int month = instance.get(Calendar.MONTH);
         int year = instance.get(Calendar.YEAR);
 
-        String formatDate = String.format("%02d/%02d/%d", day, month, year);
-        System.out.println(formatDate);
+//        String formatDate = String.currentHour("%02d/%02d/%d", day, month, year);
+//        System.out.println(formatDate);
 
-        WorkerIntentService.startActionFoo(this,formatDate);
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd.MM.yyyy");
+        String currentHour = simpleDateFormat.format(new Date());
+
+        RealmResults<RealmValCurs> date = realm.where(RealmValCurs.class)
+                .findAll();
 
 
+        if (date.size()>0) {
+
+            System.out.println("REALM HAVE VALCURS AT THESE DAY ");
+            realm.beginTransaction();
+
+            Timber.i("DATE %s",date.size());
+
+            for (RealmValCurs realmValCurs : date) {
+                System.out.println(realmValCurs.name);
+            }
+
+            realm.commitTransaction();
+
+            for (RealmValCurs realmValCurs : date) {
+                Timber.i("realmValCurs-----> %s", realmValCurs);
+                Timber.i("realmValCurs-----> %s", realmValCurs.name);
+                Timber.i("realmValCurs-----> %s", realmValCurs.valutes);
+
+                EventBus.getDefault().post(new EventRealmValCurse(realmValCurs));
+            }
+
+        } else {
+
+            System.out.println("REALM does not HAVE AT THESE HOUR ");
+
+            WorkerIntentService.getCurrentCurs(this,currentHour);
+
+        }
     }
+
 
 //    public PlayConfig getPlayConfig() {
 //        return PlayConfig
@@ -174,70 +214,7 @@ public class MainActivity extends AppCompatActivity {
 //
 //    }
 
-    private void play(String play) {
 
-
-//
-//        PlayConfig build = getPlayConfig();
-////        RxAudioPlayer rxPlayer = getRxAudioPlayer();
-//
-//
-//        int resID=getResources().getIdentifier("click", "raw", getPackageName());
-//
-//        MediaPlayer mediaPlayer=MediaPlayer.create(this,resID);
-//
-//
-//        int period = 1000 / 220;
-//
-//        if (!mediaPlayer.isPlaying()) {
-//
-//            Observable.interval(period, TimeUnit.MILLISECONDS)
-////                    .subscribeOn(Schedulers.io())
-//                    .observeOn(AndroidSchedulers.mainThread())
-//                    .doOnNext(aLong -> {
-//
-//                        mediaPlayer.start();
-//                    })
-//                    .subscribe(
-//                            aLong -> {},
-//                            Throwable::printStackTrace,
-//                            () -> {}
-//                    );
-//
-//        }
-
-
-//        rxPlayer.play(build)
-//                .subscribeOn(io)
-//                .observeOn(AndroidSchedulers.mainThread())
-//                .subscribe(new Observer<Boolean>() {
-//                    @Override
-//                    public void onSubscribe(final Disposable disposable) {
-//                        System.out.println("disposable = " + disposable);
-//                    }
-//
-//                    @Override
-//                    public void onNext(final Boolean aBoolean) {
-//
-//                        System.out.println("aBoolean = " + aBoolean);
-//                        // prepared
-//                    }
-//
-//                    @Override
-//                    public void onError(final Throwable throwable) {
-//
-//                        System.out.println("throwable = " + throwable);
-//                    }
-//
-//                    @Override
-//                    public void onComplete() {
-//                        System.out.println("mediaPlayer = " + mediaPlayer);
-//                        // play finished
-//                        // NOTE: if looping, the Observable will never finish, you need stop playing
-//                        // onDestroy, otherwise, memory leak will happen!
-//                    }
-//                });
-    }
 
     private void stop() {
 
@@ -259,16 +236,10 @@ public class MainActivity extends AppCompatActivity {
         }
 
         Timber.i(e.valCurs);
-
-
     }
-
-
 
     @Subscribe
     public void showValCurses(EventValCurse valCurseEvent) {
-
-
 
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MM-yyyy-hh");
         String format = simpleDateFormat.format(new Date());
@@ -285,12 +256,70 @@ public class MainActivity extends AppCompatActivity {
         iItems = new ArrayList<>();
 
 
-        Observable.fromIterable(valCurs.valute)
+//        Observable.fromIterable(valCurs.valute)
+//                .filter(valute -> {
+//
+//                    Currency instance;
+//                    try {
+//                        instance = Currency.getInstance(valute.charcode);
+//                    } catch (Exception e){
+//
+//                        return false;
+//                    }
+//                    return Currency.getAvailableCurrencies().contains(instance);
+//                })
+//                .map(valute -> {
+//                    Valute newVal = valute;
+//                    Currency.getInstance(valute.charcode);
+//                    return newVal;
+//                })
+//                .map(valute -> {
+//
+//                    SampleItem sampleItem = new SampleItem(valute);
+//
+//                    String replace = valute.value.replace(",", ".");
+//                    sampleItem.value = Double.parseDouble(replace);
+//
+//                    return sampleItem;
+//                })
+//                .doOnComplete(() -> adapter.set(iItems))
+//                .subscribe(e -> {
+//
+//                    iItems.add(e);
+//                });
+
+
+        for (Valute valute : valCurs.valute) {
+
+        }
+        Timber.d("valCurseEvent: %s", valCurs);
+
+    }
+
+    @Subscribe
+    public void showRealmValCurses(EventRealmValCurse valCurseEvent) {
+
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MM-yyyy-hh");
+        String format = simpleDateFormat.format(new Date());
+
+        if (Hawk.contains(format)){
+            ValCurs valCurs = Hawk.get(format);
+
+            Timber.i(format);
+
+        }
+
+        RealmValCurs valCurs = valCurseEvent.valCurs;
+
+        iItems = new ArrayList<>();
+
+
+        Observable.fromIterable(valCurs.getValutes())
                 .filter(valute -> {
 
                     Currency instance;
                     try {
-                        instance = Currency.getInstance(valute.charcode);
+                        instance = Currency.getInstance(valute.getCharcode());
                     } catch (Exception e){
 
                         return false;
@@ -298,16 +327,8 @@ public class MainActivity extends AppCompatActivity {
                     return Currency.getAvailableCurrencies().contains(instance);
                 })
                 .map(valute -> {
-                    Valute newVal = valute;
-                    Currency.getInstance(valute.charcode);
-                    return newVal;
-                })
-                .map(valute -> {
 
-                    SampleItem sampleItem = new SampleItem();
-
-                    String replace = valute.value.replace(",", ".");
-                    sampleItem.value = Double.parseDouble(replace);
+                    SampleItem sampleItem = new SampleItem(valute);
 
                     return sampleItem;
                 })
@@ -317,10 +338,6 @@ public class MainActivity extends AppCompatActivity {
                     iItems.add(e);
                 });
 
-
-        for (Valute valute : valCurs.valute) {
-
-        }
         Timber.d("valCurseEvent: %s", valCurs);
 
     }

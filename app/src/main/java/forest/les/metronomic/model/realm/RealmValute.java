@@ -14,12 +14,40 @@ public class RealmValute extends RealmObject {
     private String parentCode;
     private String date;
 
-    public RealmValute fromValuta(){
-        RealmValute realmValute = new RealmValute();
-
-        return realmValute;
+    public String getCharcode() {
+        return charcode;
     }
 
+    public void setCharcode(String charcode) {
+        this.charcode = charcode;
+    }
+
+    private String charcode;
+
+    @Override
+    public String toString() {
+        return "RealmValute{" +
+                "name='" + name + '\'' +
+                ", value='" + value + '\'' +
+                ", nominal='" + nominal + '\'' +
+                ", parentCode='" + parentCode + '\'' +
+                ", date='" + date + '\'' +
+                ", charcode='" + charcode + '\'' +
+                '}';
+    }
+
+    public String getDate() {
+        return date;
+    }
+
+    public void setDate(String date) {
+        this.date = date;
+    }
+
+    public RealmValute fromValuta(){
+        RealmValute realmValute = new RealmValute();
+        return realmValute;
+    }
 
     public String getName() {
         return name;

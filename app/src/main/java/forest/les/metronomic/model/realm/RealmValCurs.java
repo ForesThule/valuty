@@ -4,6 +4,7 @@ import java.util.List;
 
 import io.realm.RealmList;
 import io.realm.RealmObject;
+import io.realm.annotations.PrimaryKey;
 
 /**
  * Created by root on 25.06.17.
@@ -11,34 +12,35 @@ import io.realm.RealmObject;
 
 public class RealmValCurs extends RealmObject {
 
-    public RealmString date;
+    @PrimaryKey
+    public String date;
 
-    public RealmString name;
+    public String name;
 
-    public RealmString getName() {
+    public String getName() {
         return name;
     }
 
-    public void setName(RealmString name) {
+    public void setName(String name) {
         this.name = name;
     }
 
-    public RealmList<RealmString> getValutes() {
+    public RealmList<RealmValute> getValutes() {
         return valutes;
     }
 
-    public void setValutes(RealmList<RealmString> valutes) {
+    public void setValutes(RealmList<RealmValute> valutes) {
         this.valutes = valutes;
     }
 
-    public RealmString getDate() {
+    public String getDate() {
 
         return date;
     }
 
-    public void setDate(RealmString date) {
+    public void setDate(String date) {
         this.date = date;
     }
 
-    public RealmList<RealmString> valutes;
+    public RealmList<RealmValute> valutes;
 }

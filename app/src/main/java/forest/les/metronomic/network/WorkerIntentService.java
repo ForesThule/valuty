@@ -4,9 +4,7 @@ import android.app.IntentService;
 import android.content.Intent;
 import android.content.Context;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import forest.les.metronomic.ThisApp;
@@ -15,15 +13,16 @@ import forest.les.metronomic.model.Record;
 import forest.les.metronomic.model.ValCurs;
 import forest.les.metronomic.model.Valuta;
 import forest.les.metronomic.model.Valute;
+import forest.les.metronomic.model.realm.RealmItem;
 import forest.les.metronomic.model.realm.RealmRecord;
 import forest.les.metronomic.model.realm.RealmString;
 import forest.les.metronomic.model.realm.RealmValCurs;
 import forest.les.metronomic.model.realm.RealmValCursPeriod;
+import forest.les.metronomic.model.realm.RealmValuta;
+import forest.les.metronomic.model.realm.RealmValute;
 import forest.les.metronomic.network.api.CbrApi;
 import forest.les.metronomic.util.Helper;
 import io.reactivex.Observable;
-import io.reactivex.Scheduler;
-import io.reactivex.functions.Action;
 import io.reactivex.schedulers.Schedulers;
 import io.realm.Realm;
 import io.realm.RealmList;
@@ -48,7 +47,7 @@ public class WorkerIntentService extends IntentService {
 
     // TODO: Rename actions, choose action names that describe tasks that this
     // IntentService can perform, e.g. ACTION_FETCH_NEW_ITEMS
-    private static final String ACTION_FOO = "forest.les.metronomic.action.FOO";
+    private static final String ACTION_CURRENT_CURS = "forest.les.metronomic.action.FOO";
     private static final String ACTION_BAZ = "forest.les.metronomic.action.BAZ";
 
     // TODO: Rename parameters
@@ -67,9 +66,9 @@ public class WorkerIntentService extends IntentService {
      * @see IntentService
      */
     // TODO: Customize helper method
-    public static void startActionFoo(Context context, String param1) {
+    public static void getCurrentCurs(Context context, String param1) {
         Intent intent = new Intent(context, WorkerIntentService.class);
-        intent.setAction(ACTION_FOO);
+        intent.setAction(ACTION_CURRENT_CURS);
         intent.putExtra(EXTRA_PARAM1, param1);
         context.startService(intent);
     }
@@ -103,9 +102,9 @@ public class WorkerIntentService extends IntentService {
 
         if (intent != null) {
             final String action = intent.getAction();
-            if (ACTION_FOO.equals(action)) {
-                final String param1 = intent.getStringExtra(EXTRA_PARAM1);
+            if (ACTION_CURRENT_CURS.equals(action)) {
 
+                final String param1 = intent.getStringExtra(EXTRA_PARAM1);
                 getValCurse(param1);
 
             } else if (ACTION_BAZ.equals(action)) {
@@ -127,15 +126,21 @@ public class WorkerIntentService extends IntentService {
      */
     private void getValCurse(String param1) {
 
+        Timber.d(param1);
 
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MM-yyyy-hh");
-        String format = simpleDateFormat.format(new Date());
-        Timber.d(format);
-        api.getRatesOnData(format).enqueue(new Callback<ValCurs>() {
+        api.getRatesOnData(param1).enqueue(new Callback<ValCurs>() {
             @Override
             public void onResponse(Call<ValCurs> call, Response<ValCurs> response) {
 
+                Timber.i("ON RESPONSE %s", response.body());
+
                 ValCurs body = response.body();
+
+
+                RealmResults<RealmValuta> all = realm.where(RealmValuta.class).findAll();
+
+                System.out.println("ALL" + all.size());
+
 
                 realm.beginTransaction();
 
@@ -144,39 +149,52 @@ public class WorkerIntentService extends IntentService {
                 RealmValCurs realmValCurs = new RealmValCurs();
 
                 String date = valCurs.date;
-                RealmString realmDate = new RealmString();
-                realmDate.setString(date);
-                realmValCurs.setDate(realmDate);
 
+                realmValCurs.setDate(date);
 
                 String name = valCurs.name;
-                RealmString realmName = new RealmString();
-                realmName.setString(name);
-                realmValCurs.setName(realmName);
 
-                RealmList<RealmString> valutes = new RealmList<>();
+                realmValCurs.setName(name);
+
+                RealmList<RealmValute> valutes = new RealmList<>();
+
 
                 for (Valute valute : valCurs.valute) {
-                    RealmString realmString = new RealmString();
-                    realmString.setString(valute.charcode);
-                    valutes.add(realmString);
+
+                    RealmValute realmValute = new RealmValute();
+
+                    realmValute.setName(valute.name);
+                    realmValute.setNominal(valute.nominal);
+                    realmValute.setValue(valute.value);
+                    realmValute.setDate(param1);
+                    realmValute.setCharcode(valute.charcode);
+
+//                    for (RealmValuta realmValuta : valutaList) {
+//                        Timber.i("realmValuta %s",realmValuta);
+//
+//                    }
+
+//                    realmValute.setParentCode(re);
+
+                    valutes.add(realmValute);
                 }
                 realmValCurs.setValutes(valutes);
 
-                realm.copyToRealm(realmValCurs);
+
+                realm.copyToRealmOrUpdate(realmValCurs);
+
+//                realm.delete(RealmValCurs.class);
 
                 realm.commitTransaction();
 
-                RealmResults<RealmValCurs> all = realm.where(RealmValCurs.class).findAll();
-                if (all == null) {
-                    realm.beginTransaction();
-                    realm.delete(RealmValCurs.class);
-                    realm.commitTransaction();
-                }
+                RealmResults<RealmValCurs> realmValcurss = realm.where(RealmValCurs.class).findAll();
 
-                for (RealmValCurs curs : all) {
+                for (RealmValCurs curs : realmValcurss) {
 
-                    Timber.i("REALM CURS: %s", curs);
+                    for (RealmValute realmValute : curs.getValutes()) {
+
+                        Timber.i("REALM CURS DATE: %s",realmValute);
+                    }
                 }
 
 
@@ -202,19 +220,50 @@ public class WorkerIntentService extends IntentService {
             @Override
             public void onResponse(Call<Valuta> call, Response<Valuta> response) {
 
+                realm.beginTransaction();
+
                 Valuta valuta = response.body();
 
-                List<Item> items = valuta.getItems();
-                for (int i = 0; i < items.size(); i++) {
-                    Item item = items.get(i);
+                RealmResults<RealmValuta> all = realm.where(RealmValuta.class).findAll();
 
-                    if (i==2){
-                        getPeriodCurse("01/01/2000", "01/02/2017", item.parentCode);
+                System.out.println("ALL" + all.size());
 
-                    }
+                RealmValuta realmValuta = new RealmValuta();
+                realmValuta.setName(valuta.name);
+                realmValuta.setID(valuta.ID);
 
+                RealmList<RealmItem> items1 = new RealmList<>();
+                for (Item item : valuta.items) {
 
+                    RealmItem realmItem = new RealmItem();
+                    realmItem.setName(item.name);
+                    realmItem.setEngName(item.engName);
+                    realmItem.setId(item.id);
+                    realmItem.setISO_Num_Code(item.ISO_Num_Code);
+                    realmItem.setIsoCharcode(item.isoCharcode);
+                    realmItem.setNominal(item.nominal);
+                    realmItem.setParentCode(item.parentCode);
+
+                    items1.add(realmItem);
                 }
+
+                realmValuta.setItems(items1);
+
+                realm.copyToRealmOrUpdate(realmValuta);
+//                realm.delete(RealmValuta.class);
+                realm.commitTransaction();
+
+                List<Item> items = valuta.getItems();
+//                for (int i = 0; i < items.size(); i++) {
+//                    Item item = items.get(i);
+//
+//                    if (i==2){
+//                        getPeriodCurse("01/01/2000", "01/02/2017", item.parentCode);
+//
+//                    }
+//
+//
+//                }
             }
 
             @Override
@@ -233,7 +282,7 @@ public class WorkerIntentService extends IntentService {
     private void getPeriodCurse(String param1, String param2, String param3) {
 
         RealmResults<RealmValCurs> all = realm.where(RealmValCurs.class).findAll();
-        Timber.i("REALM_VAL_CURS COUNT: %d",all.size());
+        Timber.i("REALM_VAL_CURS COUNT: %d", all.size());
 
 
         api.getPeriodRx(param1, param2, param3.trim())

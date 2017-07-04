@@ -12,10 +12,15 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import forest.les.metronomic.R;
+import forest.les.metronomic.model.realm.RealmValute;
 
 public class SampleItem extends AbstractItem<SampleItem, SampleItem.ViewHolder> {
     public String name = "";
-    public double value;
+    private RealmValute realmValute;
+
+    public SampleItem(RealmValute realmValute) {
+        this.realmValute = realmValute;
+    }
 
     //The unique ID for this type of item
     @Override
@@ -33,20 +38,26 @@ public class SampleItem extends AbstractItem<SampleItem, SampleItem.ViewHolder> 
     @Override
     public void bindView(ViewHolder viewHolder, List<Object> payloads) {
         //call super so the selection is already handled for you
-    	super.bindView(viewHolder, payloads);
-    	
-    	//bind our data
+        super.bindView(viewHolder, payloads);
+
+        //bind our data
         //set the text for the name
         TextView name = viewHolder.name;
         TextView value = viewHolder.value;
 
 
-        if (this.value != 0) {
-            value.setText(Double.toString(this.value));
-        }
+        String nm = realmValute.getName();
+
+        double a = Double.parseDouble(realmValute.getValue().replace(",","."));
+
+
+
+        value.setText(String.valueOf(a));
+
+
         if (this.name != null) {
 
-            name.setText(this.name);
+            name.setText(nm);
         }
         //set the text for the description or hide
 
@@ -73,7 +84,8 @@ public class SampleItem extends AbstractItem<SampleItem, SampleItem.ViewHolder> 
 
         TextView name;
 
-        @BindView(R.id.tv_money_value) TextView value;
+        @BindView(R.id.tv_money_value)
+        TextView value;
 
         public ViewHolder(View view) {
             super(view);

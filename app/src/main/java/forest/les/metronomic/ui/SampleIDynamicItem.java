@@ -6,9 +6,12 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.mikepenz.fastadapter.items.AbstractItem;
+import com.squareup.timessquare.CalendarPickerView;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import butterknife.BindView;
@@ -17,6 +20,8 @@ import forest.les.metronomic.R;
 import forest.les.metronomic.model.ValPeriodWrapper;
 import im.dacer.androidcharts.LineView;
 import io.reactivex.Observable;
+
+import static com.squareup.timessquare.CalendarPickerView.SelectionMode.RANGE;
 
 public class SampleIDynamicItem extends AbstractItem<SampleIDynamicItem, SampleIDynamicItem.ViewHolder> {
     public String name = "";
@@ -27,7 +32,7 @@ public class SampleIDynamicItem extends AbstractItem<SampleIDynamicItem, SampleI
     //The unique ID for this type of item
     @Override
     public int getType() {
-        return R.id.fastadapter_sampleitem_id;
+        return R.id.fastadapter_dynamic_sampleitem_id;
     }
 
     //The layout to be used for this type of item
@@ -54,6 +59,22 @@ public class SampleIDynamicItem extends AbstractItem<SampleIDynamicItem, SampleI
         lineView.setDataList(arrayLists); //or lineView.setFloatDataList(floatDataLists)
 
 
+        Calendar nextYear = Calendar.getInstance();
+        nextYear.add(Calendar.YEAR, 1);
+
+        CalendarPickerView calendar = viewHolder.calendarPickerView;
+        Date today = new Date();
+
+        calendar.init(today, nextYear.getTime())
+                .inMode(RANGE)
+                .withSelectedDate(today);
+
+
+
+//        calendar.init(today, nextYear.getTime())
+//                .inMode(RANGE);
+
+
     }
 
     //reset the view here (this is an optional method, but recommended)
@@ -75,6 +96,7 @@ public class SampleIDynamicItem extends AbstractItem<SampleIDynamicItem, SampleI
         private View view;
 
         @BindView(R.id.line_view) LineView lineView;
+        @BindView(R.id.calendar_picker_start) CalendarPickerView calendarPickerView;
 
         public ViewHolder(View view) {
             super(view);
