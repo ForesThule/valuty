@@ -3,6 +3,7 @@ package forest.les.metronomic.events;
 import com.mikepenz.materialize.holder.StringHolder;
 
 import forest.les.metronomic.model.ValCurs;
+import forest.les.metronomic.model.realm.RealmValCursPeriod;
 
 /**
  * Created by root on 05.06.17.
@@ -10,9 +11,9 @@ import forest.les.metronomic.model.ValCurs;
 
 public class EventDynamicCurse {
 
-    public final String valCurs;
+    public final RealmValCursPeriod valCurs;
 
-    public EventDynamicCurse(String valCurs) {
+    public EventDynamicCurse(RealmValCursPeriod valCurs) {
         this.valCurs = valCurs;
     }
 

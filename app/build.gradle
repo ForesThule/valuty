@@ -47,6 +47,8 @@ android {
 
 dependencies {
 
+    compile 'com.borax12.materialdaterangepicker:library:1.9'
+
     compile 'com.squareup:android-times-square:1.6.5@aar'
 
     compile 'com.squareup.okhttp3:okhttp:3.8.0'
@@ -59,7 +61,7 @@ dependencies {
 
     compile 'im.dacer:AndroidCharts:1.0.3'
 
-    compile('com.squareup.retrofit2:converter-simplexml:2.3.0'){
+    compile('com.squareup.retrofit2:converter-simplexml:2.3.0') {
         exclude group: 'xpp3', module: 'xpp3'
         exclude group: 'stax', module: 'stax-api'
         exclude group: 'stax', module: 'stax'
@@ -75,7 +77,6 @@ dependencies {
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.6.0'
     compile 'com.jakewharton.timber:timber:4.5.1'
     compile 'com.jakewharton:butterknife:8.4.0'
-
 
 //    Platform bindings:
 
@@ -113,6 +114,9 @@ dependencies {
     compile 'com.mikepenz:fastadapter-extensions:2.5.2@aar'
     compile 'com.mikepenz:materialize:1.0.1@aar'
 
+
+    compile 'com.github.PhilJay:MPAndroidChart-Realm:v2.0.2@aar'
+    compile 'com.github.PhilJay:MPAndroidChart:v3.0.2'
 
     compile 'com.anupcowkur:reservoir:3.1.0'
 

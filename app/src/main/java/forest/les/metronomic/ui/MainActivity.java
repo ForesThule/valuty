@@ -1,5 +1,7 @@
 package forest.les.metronomic.ui;
 
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.os.Bundle;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v7.app.ActionBar;
@@ -9,6 +11,9 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.MenuItem;
 
+import com.borax12.materialdaterangepicker.date.DatePickerDialog;
+import com.borax12.materialdaterangepicker.time.RadialPickerLayout;
+import com.borax12.materialdaterangepicker.time.TimePickerDialog;
 import com.mikepenz.fastadapter.IItem;
 import com.mikepenz.fastadapter.commons.adapters.FastItemAdapter;
 import com.orhanobut.hawk.Hawk;
@@ -32,9 +37,12 @@ import forest.les.metronomic.events.EventValCurse;
 import forest.les.metronomic.model.ValCurs;
 import forest.les.metronomic.model.ValPeriodWrapper;
 import forest.les.metronomic.model.Valute;
+import forest.les.metronomic.model.realm.RealmRecord;
 import forest.les.metronomic.model.realm.RealmString;
 import forest.les.metronomic.model.realm.RealmValCurs;
+import forest.les.metronomic.model.realm.RealmValCursPeriod;
 import forest.les.metronomic.model.realm.RealmValuta;
+import forest.les.metronomic.model.realm.RealmValute;
 import forest.les.metronomic.network.WorkerIntentService;
 import io.reactivex.Observable;
 import io.realm.Realm;
@@ -55,7 +63,10 @@ public class MainActivity extends AppCompatActivity {
 
     private Realm realm;
 
-
+    @Override
+    public FragmentManager getFragmentManager() {
+        return getFragmentManager();
+    }
 
     @Override
     protected void onStart() {
@@ -81,7 +92,6 @@ public class MainActivity extends AppCompatActivity {
         navigation = (BottomNavigationView) findViewById(R.id.nav_main);
         recycler = (RecyclerView) findViewById(R.id.recycler);
 
-
 //        binding = DataBindingUtil.setContentView(this, R.layout.activity_main);
 //
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
@@ -102,16 +112,17 @@ public class MainActivity extends AppCompatActivity {
         recycler.addItemDecoration(new DividerItemDecoration(this,1));
 
 
+
+
+
+
     }
 
 
     private void setDynamicRates() {
 
-        SampleIDynamicItem sampleIDynamicItem = new SampleIDynamicItem();
-        sampleIDynamicItem.name = "DYNAMIC";
 
-        adapter.clear();
-        adapter.add(sampleIDynamicItem);
+        WorkerIntentService.getDynamicCurs(this,"01.01.2010","01.01.2012","R01235");
 
     }
 
@@ -178,15 +189,6 @@ public class MainActivity extends AppCompatActivity {
         if (date.size()>0) {
 
             System.out.println("REALM HAVE VALCURS AT THESE DAY ");
-            realm.beginTransaction();
-
-            Timber.i("DATE %s",date.size());
-
-            for (RealmValCurs realmValCurs : date) {
-                System.out.println(realmValCurs.name);
-            }
-
-            realm.commitTransaction();
 
             for (RealmValCurs realmValCurs : date) {
                 Timber.i("realmValCurs-----> %s", realmValCurs);
@@ -205,37 +207,28 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
-//    public PlayConfig getPlayConfig() {
-//        return PlayConfig
-//                .res(this, R.raw.click)
-//                .looping(false)
-//                .build();
-//
-//    }
-
-
-
-    private void stop() {
-
-
-
-        //        getRxAudioPlayer().stopPlay();
-    }
-
-
     @Subscribe
     public void showDynamic(EventDynamicCurse e){
 
-        Hawk.init(this);
-        Hawk.get("dynamic");
+        RealmValCursPeriod valCurs = e.valCurs;
 
-        while (Hawk.get("dynamic")) {
 
-            Timber.i("while");
+        Timber.i(valCurs.getName());
+
+
+        for (RealmRecord record : valCurs.records) {
+
+            Timber.i("RECORD %s %s",record.getValue(),record.date);
         }
 
-        Timber.i(e.valCurs);
+
+        SampleIDynamicItem sampleIDynamicItem = new SampleIDynamicItem(this,valCurs);
+        sampleIDynamicItem.name = "DYNAMIC";
+
+        adapter.clear();
+        List list = new ArrayList();
+        list.add(sampleIDynamicItem);
+        adapter.setNewList(list);
     }
 
     @Subscribe
@@ -341,5 +334,6 @@ public class MainActivity extends AppCompatActivity {
         Timber.d("valCurseEvent: %s", valCurs);
 
     }
+
 
 }

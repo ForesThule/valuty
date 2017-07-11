@@ -4,10 +4,16 @@ import android.app.IntentService;
 import android.content.Intent;
 import android.content.Context;
 
+import org.greenrobot.eventbus.EventBus;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import forest.les.metronomic.ThisApp;
+import forest.les.metronomic.events.EventDynamicCurse;
+import forest.les.metronomic.events.EventRealmValCurse;
+import forest.les.metronomic.model.BitcTickerMsg;
+import forest.les.metronomic.model.BitcTickerMsgWrapper;
 import forest.les.metronomic.model.Item;
 import forest.les.metronomic.model.Record;
 import forest.les.metronomic.model.ValCurs;
@@ -20,9 +26,11 @@ import forest.les.metronomic.model.realm.RealmValCurs;
 import forest.les.metronomic.model.realm.RealmValCursPeriod;
 import forest.les.metronomic.model.realm.RealmValuta;
 import forest.les.metronomic.model.realm.RealmValute;
+import forest.les.metronomic.network.api.BitcoinApi;
 import forest.les.metronomic.network.api.CbrApi;
 import forest.les.metronomic.util.Helper;
 import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 import io.realm.Realm;
 import io.realm.RealmList;
@@ -42,6 +50,8 @@ import timber.log.Timber;
 public class WorkerIntentService extends IntentService {
 
 
+    private static final String EXTRA_PARAM3 = "extra.param.3";
+    private static final String ACTION_GET_DYNAMIC = "action.get.dynamic";
     private CbrApi api;
     private Context ctx;
 
@@ -54,6 +64,7 @@ public class WorkerIntentService extends IntentService {
     private static final String EXTRA_PARAM1 = "forest.les.metronomic.extra.PARAM1";
     private static final String EXTRA_PARAM2 = "forest.les.metronomic.extra.PARAM2";
     private Realm realm;
+    private BitcoinApi btcApi;
 
     public WorkerIntentService() {
         super("WorkerIntentService");
@@ -88,6 +99,15 @@ public class WorkerIntentService extends IntentService {
         context.startService(intent);
     }
 
+    public static void getDynamicCurs(Context context, String param1, String param2, String param3) {
+        Intent intent = new Intent(context, WorkerIntentService.class);
+        intent.setAction(ACTION_GET_DYNAMIC);
+        intent.putExtra(EXTRA_PARAM1, param1);
+        intent.putExtra(EXTRA_PARAM2, param2);
+        intent.putExtra(EXTRA_PARAM3, param3);
+        context.startService(intent);
+    }
+
     @Override
     protected void onHandleIntent(Intent intent) {
 
@@ -100,16 +120,41 @@ public class WorkerIntentService extends IntentService {
             api = Helper.getCbrApi();
         }
 
+        if (null == btcApi) {
+            btcApi = Helper.getBtcApi();
+
+        }
+
         if (intent != null) {
+
             final String action = intent.getAction();
-            if (ACTION_CURRENT_CURS.equals(action)) {
 
-                final String param1 = intent.getStringExtra(EXTRA_PARAM1);
-                getValCurse(param1);
+            switch (action) {
+                case ACTION_CURRENT_CURS: {
 
-            } else if (ACTION_BAZ.equals(action)) {
-                final String param1 = intent.getStringExtra(EXTRA_PARAM1);
-                final String param2 = intent.getStringExtra(EXTRA_PARAM2);
+                    final String param1 = intent.getStringExtra(EXTRA_PARAM1);
+
+                    getValCurse(param1);
+
+                    break;
+                }
+                case ACTION_BAZ: {
+
+                    final String param1 = intent.getStringExtra(EXTRA_PARAM1);
+                    final String param2 = intent.getStringExtra(EXTRA_PARAM2);
+
+                    break;
+                }
+                case ACTION_GET_DYNAMIC: {
+
+                    final String param1 = intent.getStringExtra(EXTRA_PARAM1);
+                    final String param2 = intent.getStringExtra(EXTRA_PARAM2);
+                    final String param3 = intent.getStringExtra(EXTRA_PARAM3);
+
+                    getPeriodCurse(param1, param2, param3);
+
+                    break;
+                }
             }
         }
     }
@@ -120,11 +165,13 @@ public class WorkerIntentService extends IntentService {
 
     }
 
+
     /**
      * Handle action Foo in the provided background thread with the provided
      * parameters.
      */
     private void getValCurse(String param1) {
+
 
         Timber.d(param1);
 
@@ -132,17 +179,10 @@ public class WorkerIntentService extends IntentService {
             @Override
             public void onResponse(Call<ValCurs> call, Response<ValCurs> response) {
 
+
                 Timber.i("ON RESPONSE %s", response.body());
 
                 ValCurs body = response.body();
-
-
-                RealmResults<RealmValuta> all = realm.where(RealmValuta.class).findAll();
-
-                System.out.println("ALL" + all.size());
-
-
-                realm.beginTransaction();
 
                 ValCurs valCurs = response.body();
 
@@ -169,34 +209,61 @@ public class WorkerIntentService extends IntentService {
                     realmValute.setDate(param1);
                     realmValute.setCharcode(valute.charcode);
 
-//                    for (RealmValuta realmValuta : valutaList) {
-//                        Timber.i("realmValuta %s",realmValuta);
-//
-//                    }
 
-//                    realmValute.setParentCode(re);
+                    RealmResults<RealmValuta> all = realm.where(RealmValuta.class).findAll();
+
+                    ArrayList<RealmValuta> realmValutas = new ArrayList<>(all);
+
+                    for (RealmValuta realmValuta : realmValutas) {
+
+                        for (RealmItem realmItem : realmValuta.getItems()) {
+
+
+                            if (valute.charcode.equals(realmItem.getIsoCharcode())) {
+                                realmValute.setParentCode(realmItem.parentCode.trim());
+
+                            }
+                        }
+                    }
+
 
                     valutes.add(realmValute);
                 }
                 realmValCurs.setValutes(valutes);
+
+                realm.beginTransaction();
 
 
                 realm.copyToRealmOrUpdate(realmValCurs);
 
 //                realm.delete(RealmValCurs.class);
 
-                realm.commitTransaction();
 
                 RealmResults<RealmValCurs> realmValcurss = realm.where(RealmValCurs.class).findAll();
 
-                for (RealmValCurs curs : realmValcurss) {
+                ArrayList<RealmValCurs> realmValCurses = new ArrayList<>(realmValcurss);
+
+                for (RealmValCurs curs : realmValCurses) {
 
                     for (RealmValute realmValute : curs.getValutes()) {
 
-                        Timber.i("REALM CURS DATE: %s",realmValute);
+                        Timber.i("REALM CURS DATE: %s", realmValute);
+
+                        EventBus.getDefault().post(new EventRealmValCurse(realmValCurs));
+
                     }
                 }
 
+                RealmResults<RealmValuta> basicDataList = realm.where(RealmValuta.class).findAll();
+
+                Timber.i("basicDataList %s", basicDataList.size());
+
+                if (basicDataList.size() == 0) {
+
+                    getBasicData();
+                }
+
+                realm.commitTransaction();
 
                 Timber.i("onResponse");
 
@@ -209,8 +276,6 @@ public class WorkerIntentService extends IntentService {
             }
         });
 
-
-        getBasicData();
 
     }
 
@@ -235,6 +300,7 @@ public class WorkerIntentService extends IntentService {
                 RealmList<RealmItem> items1 = new RealmList<>();
                 for (Item item : valuta.items) {
 
+                    Timber.i("PARENT CODE %s %s", item.engName, item.getParentCode());
                     RealmItem realmItem = new RealmItem();
                     realmItem.setName(item.name);
                     realmItem.setEngName(item.engName);
@@ -281,41 +347,55 @@ public class WorkerIntentService extends IntentService {
      */
     private void getPeriodCurse(String param1, String param2, String param3) {
 
-        RealmResults<RealmValCurs> all = realm.where(RealmValCurs.class).findAll();
-        Timber.i("REALM_VAL_CURS COUNT: %d", all.size());
+//        RealmResults<RealmValCurs> all = realm.where(RealmValCurs.class).findAll();
+//        Timber.i("REALM_VAL_CURS COUNT: %d", all.size());
 
 
         api.getPeriodRx(param1, param2, param3.trim())
-
+                .observeOn(AndroidSchedulers.mainThread())
                 .subscribeOn(Schedulers.io())
                 .map(valCursPeriod -> {
 
-                    Observable.fromIterable(valCursPeriod.records)
-                            .subscribe(record -> {
-
-                                handleValCursPeriod(record);
-
-                            });
+//                    Observable.fromIterable(valCursPeriod.records)
+//                            .subscribe(record -> {
+//
+//                                handleValCursPeriod(record);
+//                            });
 
                     RealmValCursPeriod realmValCursPeriod = new RealmValCursPeriod();
 
                     realmValCursPeriod.setName(valCursPeriod.name);
                     realmValCursPeriod.date1 = valCursPeriod.date1;
                     realmValCursPeriod.date2 = valCursPeriod.date2;
+                    List<Record> records = valCursPeriod.records;
+                    RealmList<RealmRecord> realmRecords = new RealmList<>();
 
-                    Observable.fromIterable(valCursPeriod.records)
+                    for (Record record : records) {
 
-                            .map(record -> {
+                        RealmRecord realmRecord = new RealmRecord();
+                        realmRecord.date = record.date;
+                        realmRecord.setValue(record.value);
+                        realmRecord.setID(record.getID());
 
-                                RealmRecord realmRecord = new RealmRecord();
-                                realmRecord.setDate(record.date);
-                                realmRecord.value = record.value;
-                                realmRecord.nominal = record.nominal;
-                                realmRecord.setID(record.getID());
+                        realmRecords.add(realmRecord);
 
-                                return realmRecord;
+                    }
 
-                            }).subscribe(realmValCursPeriod.records::add);
+                    realmValCursPeriod.records = realmRecords;
+
+//                    Observable.fromIterable(valCursPeriod.records)
+//
+//                            .map(record -> {
+//
+//                                RealmRecord realmRecord = new RealmRecord();
+//                                realmRecord.setDate(record.date);
+//                                realmRecord.value = record.value;
+//                                realmRecord.nominal = record.nominal;
+//                                realmRecord.setID(record.getID());
+//
+//                                return realmRecord;
+//
+//                            }).subscribe(realmValCursPeriod.records::add);
 
 
                     return realmValCursPeriod;
@@ -327,9 +407,16 @@ public class WorkerIntentService extends IntentService {
 //                    realm.copyToRealmOrUpdate(valCursPeriod);
 //                    realm.commitTransaction();
 
+                    Timber.i("subscribe");
+                    EventBus.getDefault().post(new EventDynamicCurse(valCursPeriod));
+
                     Timber.i("%s - %s", valCursPeriod.getDate1(), valCursPeriod.getName());
 
-                }, Throwable::getMessage);
+                }, Throwable::getMessage, () -> {
+                    Timber.i("onComp");
+                });
+
+        getBitcoinCurse();
 
     }
 
@@ -338,5 +425,28 @@ public class WorkerIntentService extends IntentService {
 
         Timber.i("handleValCursPeriod = %s", valCursPeriod);
 
+    }
+
+    private void getBitcoinCurse( ) {
+        Timber.i("GET BTC CURS");
+        btcApi.getData()
+                .subscribe(aDouble ->  {
+                    Timber.i("BTC %s",aDouble);
+                });
+
+
+//        btcApi.getData().enqueue(new Callback<BitcTickerMsgWrapper>() {
+//            @Override
+//            public void onResponse(Call<BitcTickerMsgWrapper> call, Response<BitcTickerMsgWrapper> response) {
+//                Timber.i("RESP %s",response.body());
+//            }
+//
+//            @Override
+//            public void onFailure(Call<BitcTickerMsgWrapper> call, Throwable throwable) {
+//
+//                Timber.i("ERR %s",throwable.getMessage());
+//
+//            }
+//        });
     }
 }
