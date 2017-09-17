@@ -312,7 +312,6 @@ public class CalcItem extends AbstractItem<CalcItem, CalcItem.ViewHolder> {
 
         BigDecimal divide = inRubles.divide(outInRubles, BigDecimal.ROUND_HALF_UP).setScale(2, BigDecimal.ROUND_HALF_UP);
 
-
         Timber.i("calculate: %s %s", inValuteDec, outValuteDec);
 
         Timber.i("calculate: %s", divide);
