@@ -1,37 +1,41 @@
-package forest.les.metronomic.ui;
+package forest.les.metronomic.ui.adapters;
 
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
+import android.widget.ExpandableListView;
 import android.widget.TextView;
 
 import com.mikepenz.fastadapter.items.AbstractItem;
-import com.mikepenz.materialize.holder.StringHolder;
 
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import forest.les.metronomic.R;
-import forest.les.metronomic.model.realm.RealmValute;
+import forest.les.metronomic.model.Valute;
 
-public class SampleItem extends AbstractItem<SampleItem, SampleItem.ViewHolder> {
+public class DynamicItem extends AbstractItem<DynamicItem, DynamicItem.ViewHolder> {
     public String name = "";
-    private RealmValute realmValute;
+    public Valute realmValute;
 
-    public SampleItem(RealmValute realmValute) {
-        this.realmValute = realmValute;
+
+
+    public DynamicItem(Valute valute) {
+
+        realmValute = valute;
+
     }
 
     //The unique ID for this type of item
     @Override
     public int getType() {
-        return R.id.fastadapter_sampleitem_id;
+        return R.id.dynamic_sampleitem_id;
     }
 
     //The layout to be used for this type of item
     @Override
     public int getLayoutRes() {
-        return R.layout.sample_item;
+        return R.layout.dynamic_layout;
     }
 
     //The logic to bind your data to the view
@@ -40,25 +44,7 @@ public class SampleItem extends AbstractItem<SampleItem, SampleItem.ViewHolder> 
         //call super so the selection is already handled for you
         super.bindView(viewHolder, payloads);
 
-        //bind our data
-        //set the text for the name
-        TextView name = viewHolder.name;
-        TextView value = viewHolder.value;
 
-
-        String nm = realmValute.getName();
-
-        double a = Double.parseDouble(realmValute.getValue().replace(",","."));
-
-
-
-        value.setText(String.valueOf(a));
-
-
-        if (this.name != null) {
-
-            name.setText(nm);
-        }
         //set the text for the description or hide
 
     }
@@ -67,8 +53,8 @@ public class SampleItem extends AbstractItem<SampleItem, SampleItem.ViewHolder> 
     @Override
     public void unbindView(ViewHolder holder) {
         super.unbindView(holder);
-        holder.name.setText(null);
-        holder.value.setText(null);
+
+
     }
 
     //Init the viewHolder for this Item
@@ -84,16 +70,17 @@ public class SampleItem extends AbstractItem<SampleItem, SampleItem.ViewHolder> 
 
         TextView name;
 
-        @BindView(R.id.tv_money_value)
-        TextView value;
+        @BindView(R.id.valute_first)
+        ExpandableListView expandableListViewFrs;
+
+        @BindView(R.id.valute_second)
+        ExpandableListView expandableListViewSec;
 
         public ViewHolder(View view) {
             super(view);
             ButterKnife.bind(this, view);
             this.view = view;
 
-            name = (TextView) view.findViewById(R.id.tv_money_name);
-            value = (TextView) view.findViewById(R.id.tv_money_value);
         }
     }
 }

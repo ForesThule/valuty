@@ -1,5 +1,8 @@
 package forest.les.metronomic.util;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import forest.les.metronomic.BuildConfig;
 import forest.les.metronomic.network.api.BitcoinApi;
 import forest.les.metronomic.network.api.CbrApi;
@@ -63,6 +66,11 @@ public class Helper {
 
         return retrofit.create(BitcoinApi.class);
     };
+
+    public static String getActualTime() {
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd.MM.yyyy");
+        return  simpleDateFormat.format(new Date());
+    }
 
 
 }

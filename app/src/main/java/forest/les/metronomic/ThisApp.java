@@ -18,27 +18,26 @@ import timber.log.Timber;
 public class ThisApp extends Application {
 
     public static CbrApi api;
-    public Realm realm;
+
 
     @Override
     public void onCreate() {
 
         super.onCreate();
 
-        realm.init(this);
 
-        RealmConfiguration config = new RealmConfiguration
-                .Builder()
-                .deleteRealmIfMigrationNeeded()
-                .build();
-
-        Realm.setDefaultConfiguration(config);
-
-        realm = Realm.getDefaultInstance();
+//        RealmConfiguration config = new RealmConfiguration
+//                .Builder()
+//                .deleteRealmIfMigrationNeeded()
+//                .build();
+//
+//        Realm.setDefaultConfiguration(config);
 
         Hawk.init(this).build();
 
         api = Helper.getCbrApi();
+
+
 
         if (BuildConfig.DEBUG) {
 

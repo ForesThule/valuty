@@ -21,7 +21,4 @@ public interface BitcoinApi {
 
     @GET("ru/ticker")
     Observable<Example> getData();
-
-
-
 }

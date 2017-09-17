@@ -63,6 +63,7 @@ public class WorkerIntentService extends IntentService {
     // TODO: Rename parameters
     private static final String EXTRA_PARAM1 = "forest.les.metronomic.extra.PARAM1";
     private static final String EXTRA_PARAM2 = "forest.les.metronomic.extra.PARAM2";
+
     private Realm realm;
     private BitcoinApi btcApi;
 
@@ -111,10 +112,8 @@ public class WorkerIntentService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
 
-
         ctx = this;
 
-        realm = ThisApp.get(this).realm;
 
         if (null == api) {
             api = Helper.getCbrApi();
@@ -151,7 +150,7 @@ public class WorkerIntentService extends IntentService {
                     final String param2 = intent.getStringExtra(EXTRA_PARAM2);
                     final String param3 = intent.getStringExtra(EXTRA_PARAM3);
 
-                    getPeriodCurse(param1, param2, param3);
+//                    getPeriodCurse(param1, param2, param3);
 
                     break;
                 }
@@ -281,63 +280,63 @@ public class WorkerIntentService extends IntentService {
 
     private void getBasicData() {
 
-        api.getValutesFullData().enqueue(new Callback<Valuta>() {
-            @Override
-            public void onResponse(Call<Valuta> call, Response<Valuta> response) {
-
-                realm.beginTransaction();
-
-                Valuta valuta = response.body();
-
-                RealmResults<RealmValuta> all = realm.where(RealmValuta.class).findAll();
-
-                System.out.println("ALL" + all.size());
-
-                RealmValuta realmValuta = new RealmValuta();
-                realmValuta.setName(valuta.name);
-                realmValuta.setID(valuta.ID);
-
-                RealmList<RealmItem> items1 = new RealmList<>();
-                for (Item item : valuta.items) {
-
-                    Timber.i("PARENT CODE %s %s", item.engName, item.getParentCode());
-                    RealmItem realmItem = new RealmItem();
-                    realmItem.setName(item.name);
-                    realmItem.setEngName(item.engName);
-                    realmItem.setId(item.id);
-                    realmItem.setISO_Num_Code(item.ISO_Num_Code);
-                    realmItem.setIsoCharcode(item.isoCharcode);
-                    realmItem.setNominal(item.nominal);
-                    realmItem.setParentCode(item.parentCode);
-
-                    items1.add(realmItem);
-                }
-
-                realmValuta.setItems(items1);
-
-                realm.copyToRealmOrUpdate(realmValuta);
-//                realm.delete(RealmValuta.class);
-                realm.commitTransaction();
-
-                List<Item> items = valuta.getItems();
-//                for (int i = 0; i < items.size(); i++) {
-//                    Item item = items.get(i);
+//        api.getValutesFullData().enqueue(new Callback<Valuta>() {
+//            @Override
+//            public void onResponse(Call<Valuta> call, Response<Valuta> response) {
 //
-//                    if (i==2){
-//                        getPeriodCurse("01/01/2000", "01/02/2017", item.parentCode);
+//                realm.beginTransaction();
 //
-//                    }
+//                Valuta valuta = response.body();
 //
+//                RealmResults<RealmValuta> all = realm.where(RealmValuta.class).findAll();
 //
+//                System.out.println("ALL" + all.size());
+//
+//                RealmValuta realmValuta = new RealmValuta();
+//                realmValuta.setName(valuta.name);
+//                realmValuta.setID(valuta.ID);
+//
+//                RealmList<RealmItem> items1 = new RealmList<>();
+//                for (Item item : valuta.items) {
+//
+//                    Timber.i("PARENT CODE %s %s", item.engName, item.getParentCode());
+//                    RealmItem realmItem = new RealmItem();
+//                    realmItem.setName(item.name);
+//                    realmItem.setEngName(item.engName);
+//                    realmItem.setId(item.id);
+//                    realmItem.setISO_Num_Code(item.ISO_Num_Code);
+//                    realmItem.setIsoCharcode(item.isoCharcode);
+//                    realmItem.setNominal(item.nominal);
+//                    realmItem.setParentCode(item.parentCode);
+//
+//                    items1.add(realmItem);
 //                }
-            }
-
-            @Override
-            public void onFailure(Call<Valuta> call, Throwable throwable) {
-                Timber.d("ERROR %s", throwable.getMessage());
-
-            }
-        });
+//
+//                realmValuta.setItems(items1);
+//
+//                realm.copyToRealmOrUpdate(realmValuta);
+////                realm.delete(RealmValuta.class);
+//                realm.commitTransaction();
+//
+//                List<Item> items = valuta.getItems();
+////                for (int i = 0; i < items.size(); i++) {
+////                    Item item = items.get(i);
+////
+////                    if (i==2){
+////                        getPeriodCurse("01/01/2000", "01/02/2017", item.parentCode);
+////
+////                    }
+////
+////
+////                }
+//            }
+//
+//            @Override
+//            public void onFailure(Call<Valuta> call, Throwable throwable) {
+//                Timber.d("ERROR %s", throwable.getMessage());
+//
+//            }
+//        });
 
     }
 
@@ -345,80 +344,80 @@ public class WorkerIntentService extends IntentService {
      * Handle action Baz in the provided background thread with the provided
      * parameters.
      */
-    private void getPeriodCurse(String param1, String param2, String param3) {
-
-//        RealmResults<RealmValCurs> all = realm.where(RealmValCurs.class).findAll();
-//        Timber.i("REALM_VAL_CURS COUNT: %d", all.size());
-
-
-        api.getPeriodRx(param1, param2, param3.trim())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeOn(Schedulers.io())
-                .map(valCursPeriod -> {
-
-//                    Observable.fromIterable(valCursPeriod.records)
-//                            .subscribe(record -> {
+//    private void getPeriodCurse(String param1, String param2, String param3) {
 //
-//                                handleValCursPeriod(record);
-//                            });
-
-                    RealmValCursPeriod realmValCursPeriod = new RealmValCursPeriod();
-
-                    realmValCursPeriod.setName(valCursPeriod.name);
-                    realmValCursPeriod.date1 = valCursPeriod.date1;
-                    realmValCursPeriod.date2 = valCursPeriod.date2;
-                    List<Record> records = valCursPeriod.records;
-                    RealmList<RealmRecord> realmRecords = new RealmList<>();
-
-                    for (Record record : records) {
-
-                        RealmRecord realmRecord = new RealmRecord();
-                        realmRecord.date = record.date;
-                        realmRecord.setValue(record.value);
-                        realmRecord.setID(record.getID());
-
-                        realmRecords.add(realmRecord);
-
-                    }
-
-                    realmValCursPeriod.records = realmRecords;
-
-//                    Observable.fromIterable(valCursPeriod.records)
+////        RealmResults<RealmValCurs> all = realm.where(RealmValCurs.class).findAll();
+////        Timber.i("REALM_VAL_CURS COUNT: %d", all.size());
 //
-//                            .map(record -> {
 //
-//                                RealmRecord realmRecord = new RealmRecord();
-//                                realmRecord.setDate(record.date);
-//                                realmRecord.value = record.value;
-//                                realmRecord.nominal = record.nominal;
-//                                realmRecord.setID(record.getID());
+//        api.getPeriodRx(param1, param2, param3.trim())
+//                .observeOn(AndroidSchedulers.mainThread())
+//                .subscribeOn(Schedulers.io())
+//                .map(valCursPeriod -> {
 //
-//                                return realmRecord;
+////                    Observable.fromIterable(valCursPeriod.records)
+////                            .subscribe(record -> {
+////
+////                                handleValCursPeriod(record);
+////                            });
 //
-//                            }).subscribe(realmValCursPeriod.records::add);
+//                    RealmValCursPeriod realmValCursPeriod = new RealmValCursPeriod();
+//
+//                    realmValCursPeriod.setName(valCursPeriod.name);
+//                    realmValCursPeriod.date1 = valCursPeriod.date1;
+//                    realmValCursPeriod.date2 = valCursPeriod.date2;
+//                    List<Record> records = valCursPeriod.records;
+//                    RealmList<RealmRecord> realmRecords = new RealmList<>();
+//
+//                    for (Record record : records) {
+//
+//                        RealmRecord realmRecord = new RealmRecord();
+//                        realmRecord.date = record.date;
+//                        realmRecord.setValue(record.value);
+//                        realmRecord.setID(record.getID());
+//
+//                        realmRecords.add(realmRecord);
+//
+//                    }
+//
+//                    realmValCursPeriod.records = realmRecords;
+//
+////                    Observable.fromIterable(valCursPeriod.records)
+////
+////                            .map(record -> {
+////
+////                                RealmRecord realmRecord = new RealmRecord();
+////                                realmRecord.setDate(record.date);
+////                                realmRecord.value = record.value;
+////                                realmRecord.nominal = record.nominal;
+////                                realmRecord.setID(record.getID());
+////
+////                                return realmRecord;
+////
+////                            }).subscribe(realmValCursPeriod.records::add);
+//
+//
+//                    return realmValCursPeriod;
+//                })
+////                .flatMap(valCursPeriod -> Observable.fromIterable(valCursPeriod.records))
+//                .subscribe(valCursPeriod -> {
+//
+////                    realm.beginTransaction();
+////                    realm.copyToRealmOrUpdate(valCursPeriod);
+////                    realm.commitTransaction();
+//
+//                    Timber.i("subscribe");
+////                    EventBus.getDefault().post(new EventDynamicCurse(valCursPeriod));
+//
+////                    Timber.i("%s - %s", valCursPeriod.getDate1(), valCursPeriod.getName());
+//
+//                }, Throwable::getMessage, () -> {
+//                    Timber.i("onComp");
+//                });
 
-
-                    return realmValCursPeriod;
-                })
-//                .flatMap(valCursPeriod -> Observable.fromIterable(valCursPeriod.records))
-                .subscribe(valCursPeriod -> {
-
-//                    realm.beginTransaction();
-//                    realm.copyToRealmOrUpdate(valCursPeriod);
-//                    realm.commitTransaction();
-
-                    Timber.i("subscribe");
-                    EventBus.getDefault().post(new EventDynamicCurse(valCursPeriod));
-
-                    Timber.i("%s - %s", valCursPeriod.getDate1(), valCursPeriod.getName());
-
-                }, Throwable::getMessage, () -> {
-                    Timber.i("onComp");
-                });
-
-        getBitcoinCurse();
-
-    }
+//        getBitcoinCurse();
+//
+//    }
 
     private void handleValCursPeriod(Record valCursPeriod) {
 

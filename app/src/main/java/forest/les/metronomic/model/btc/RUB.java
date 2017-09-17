@@ -61,4 +61,15 @@ public class RUB {
         this.additionalProperties.put(name, value);
     }
 
+    @Override
+    public String toString() {
+        return "RUB{" +
+                "_15m=" + _15m +
+                ", last=" + last +
+                ", buy=" + buy +
+                ", sell=" + sell +
+                ", symbol='" + symbol + '\'' +
+                ", additionalProperties=" + additionalProperties +
+                '}';
+    }
 }

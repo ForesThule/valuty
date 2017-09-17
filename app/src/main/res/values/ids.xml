@@ -2,4 +2,6 @@
 <resources>
     <item name="fastadapter_sampleitem_id" type="id">12345</item>
     <item name="fastadapter_dynamic_sampleitem_id" type="id">4563</item>
+    <item name="calc_sampleitem_id" type="id">calc item id</item>
+    <item name="dynamic_sampleitem_id" type="id">dynamicitemd</item>
 </resources>

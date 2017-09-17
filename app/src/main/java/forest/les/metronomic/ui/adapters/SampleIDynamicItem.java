@@ -1,12 +1,8 @@
-package forest.les.metronomic.ui;
+package forest.les.metronomic.ui.adapters;
 
-import android.app.DatePickerDialog;
-import android.app.FragmentManager;
 import android.content.Context;
-import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
-import android.widget.TextView;
 
 import com.borax12.materialdaterangepicker.time.RadialPickerLayout;
 import com.borax12.materialdaterangepicker.time.TimePickerDialog;
@@ -18,22 +14,15 @@ import com.mikepenz.fastadapter.items.AbstractItem;
 import com.squareup.timessquare.CalendarPickerView;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import forest.les.metronomic.R;
-import forest.les.metronomic.model.ValPeriodWrapper;
 import forest.les.metronomic.model.realm.RealmRecord;
 import forest.les.metronomic.model.realm.RealmValCursPeriod;
-import im.dacer.androidcharts.LineView;
-import io.reactivex.Observable;
+import forest.les.metronomic.ui.MainActivity;
 import io.realm.RealmList;
-
-import static com.squareup.timessquare.CalendarPickerView.SelectionMode.RANGE;
 
 public class SampleIDynamicItem extends AbstractItem<SampleIDynamicItem, SampleIDynamicItem.ViewHolder>  implements TimePickerDialog.OnTimeSetListener, com.borax12.materialdaterangepicker.date.DatePickerDialog.OnDateSetListener{
     public String name = "";

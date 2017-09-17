@@ -1,8 +1,11 @@
 <resources>
-    <string name="app_name">METRONOMIC</string>
+    <string name="app_name">VALUTY</string>
     <string name="title_home">Home</string>
     <string name="title_dashboard">Dashboard</string>
     <string name="title_notifications">Notifications</string>
-    <string name="title_activity_login">LoginActivity</string>
+    <string name="title_activity_login">VALUTY</string>
     <string name="title_login">Login</string>
+    <string name="et_hint">Количество</string>
+    <string name="nav_title_calculator">Калькулятор</string>
+    <string name="rate">Курс</string>
 </resources>

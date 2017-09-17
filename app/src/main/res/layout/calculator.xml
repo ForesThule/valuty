@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="top|center"
+    android:orientation="vertical">
+
+
+    <TextView
+        android:id="@+id/et_value_output"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Итог"
+        android:textSize="30dp"
+        tools:text="OUTPUT" />
+
+    <Spinner
+        android:id="@+id/spin_valutes_output"
+        android:layout_width="match_parent"
+        android:layout_height="50dp" />
+
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_arrow_upward_black_24dp" />
+
+    <Spinner
+        android:id="@+id/spin_valutes_input"
+        android:layout_width="match_parent"
+        android:layout_height="50dp" />
+
+    <EditText
+        android:id="@+id/et_value"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/et_hint"
+        android:inputType="numberDecimal"
+        android:textSize="24dp" />
+
+
+</LinearLayout>

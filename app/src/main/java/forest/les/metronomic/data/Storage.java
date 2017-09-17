@@ -1,5 +1,6 @@
 package forest.les.metronomic.data;
 
+import android.arch.lifecycle.LiveData;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.support.annotation.Nullable;
@@ -15,21 +16,29 @@ import forest.les.metronomic.ThisApp;
 import forest.les.metronomic.model.Item;
 import forest.les.metronomic.model.ValCursPeriod;
 import forest.les.metronomic.model.ValPeriodWrapper;
+import forest.les.metronomic.model.Valute;
 import forest.les.metronomic.util.Cv;
+import forest.les.metronomic.util.Helper;
 import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 import io.realm.Realm;
 import timber.log.Timber;
+
+import static android.R.attr.data;
 
 /**
  * Created by root on 10.06.17.
  */
 
-public class Storage {
+public class Storage{
+
+
+
+
 
     public static void getRealmData(Context context){
 
-        Realm realm = ThisApp.get(context).realm;
 
     }
 
@@ -90,4 +99,11 @@ public class Storage {
     }
 
 
+    public static String getActualValuteData(Context ctx) {
+
+        String jsonString = getSpecificStorage(ctx, Cv.PREFS_VALUTA_DATA)
+                .getString(Cv.REPO_VALUTA_DATA, "");
+
+        return jsonString;
+    }
 }

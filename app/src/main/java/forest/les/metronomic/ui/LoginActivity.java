@@ -20,6 +20,7 @@ import com.jakewharton.rxbinding2.support.design.widget.RxBottomNavigationView;
 import com.jakewharton.rxbinding2.support.v17.leanback.widget.RxSearchEditText;
 import com.jakewharton.rxbinding2.view.RxView;
 import com.jakewharton.rxbinding2.widget.RxTextView;
+import com.stephentuso.welcome.WelcomeHelper;
 
 import java.util.regex.Pattern;
 
@@ -39,13 +40,23 @@ public class LoginActivity extends AppCompatActivity {
     @BindView(R.id.et_login) EditText etLogin;
     @BindView(R.id.et_password) EditText ePassword;
     BottomNavigationView navigation;
+    WelcomeHelper welcomeScreen;
 
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        welcomeScreen.onSaveInstanceState(outState);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         ButterKnife.bind(this);
+
+        welcomeScreen = new WelcomeHelper(this, SplashActivity.class);
+        welcomeScreen.forceShow();
 
         etLogin = (EditText) findViewById(R.id.et_login);
         navigation = (BottomNavigationView) findViewById(R.id.nav_login);
@@ -60,8 +71,10 @@ public class LoginActivity extends AppCompatActivity {
         navigation.setOnNavigationItemSelectedListener(item -> {
 
             startActivity(new Intent(getApplicationContext(), MainActivity.class));
-            return false;
+            return true;
         });
+
+
 
 
 
