@@ -4,4 +4,5 @@
     <item name="fastadapter_dynamic_sampleitem_id" type="id">4563</item>
     <item name="calc_sampleitem_id" type="id">calc item id</item>
     <item name="dynamic_sampleitem_id" type="id">dynamicitemd</item>
+    <item name="calc_rxitem_id" type="id">calc_rxitem</item>
 </resources>

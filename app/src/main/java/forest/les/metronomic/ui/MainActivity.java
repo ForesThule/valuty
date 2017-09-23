@@ -26,8 +26,10 @@ import forest.les.metronomic.R;
 import forest.les.metronomic.events.EventDynamicCurse;
 import forest.les.metronomic.model.Item;
 import forest.les.metronomic.model.ValCurs;
+import forest.les.metronomic.model.ValCursPeriod;
 import forest.les.metronomic.model.Valuta;
 import forest.les.metronomic.model.Valute;
+import forest.les.metronomic.model.btc.Example;
 import forest.les.metronomic.model.realm.RealmRecord;
 import forest.les.metronomic.model.realm.RealmValCursPeriod;
 import forest.les.metronomic.network.api.CbrApi;
@@ -36,6 +38,7 @@ import forest.les.metronomic.ui.adapters.SampleIDynamicItem;
 import forest.les.metronomic.ui.adapters.SampleItem;
 import forest.les.metronomic.util.Helper;
 import io.reactivex.Observable;
+import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 import timber.log.Timber;
@@ -95,6 +98,7 @@ public class MainActivity extends LifecycleActivity {
         recycler = (RecyclerView) findViewById(R.id.recycler);
         adapter = new FastItemAdapter();
 
+
 //        binding = DataBindingUtil.setContentView(this, R.layout.activity_main);
 //
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
@@ -111,6 +115,8 @@ public class MainActivity extends LifecycleActivity {
 
         recycler.addItemDecoration(new DividerItemDecoration(this, 1));
 
+
+
         getActualData();
 
     }
@@ -119,71 +125,155 @@ public class MainActivity extends LifecycleActivity {
 
         CbrApi cbrApi = Helper.getCbrApi();
 
-        cbrApi.getValutesFullData()
+        Observable<Valuta> valutaFullObservable = cbrApi.getValutesFullData()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread());
+//                .subscribe(valuta -> {
+//
+//                    currentValuteData = valuta;
+//                    Timber.i(valuta.name);
+//                }, Throwable::printStackTrace);
+
+
+
+
+        Observable<ValCurs> currentObservable = cbrApi.getCurrentRates(Helper.getActualTime())
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread());
+//                .flatMap(valCurs -> Observable.fromIterable(valCurs.valute))
+//                .map(valute -> {
+//
+//                    List<Valute> valutes = valute.valute;
+//                    List<Valute> result = valute.valute;
+//
+//                    for (Valute val : valutes) {
+//
+//                        Currency instance;
+//                        try {
+//                            instance = Currency.getInstance(val.charcode);
+//                            if( Currency.getAvailableCurrencies().contains(instance)){
+//
+//                                result.add(val);
+//                            }
+//                        } catch (Exception e) {
+//                            e.printStackTrace();
+//                        }
+//
+//                    }
+//
+//                    valute.valute = result;
+//
+//                    return valute;
+//
+//                });
+
+//                .map(valCurs -> {
+//                    ValCurs valCurs1 = valCurs;
+//                    List<Valute> valutes = valCurs1.valute;
+//
+//                    Valute rub = new Valute();
+//                    rub.value = "1";
+//                    rub.nominal = "1";
+//                    rub.name = "Российский рубль";
+//                    rub.charcode = "RUB";
+//                    valutes.add(rub);
+//
+//                    valCurs1.valute = valutes;
+//
+//                    return valCurs1;
+//
+//                });
+//                .subscribe(valCurs -> {
+//
+//                    currentRateList = valCurs.valute;
+//
+//                    Timber.i(valCurs.name);
+//                }, Throwable::printStackTrace);
+
+
+        Observable<Example> btcObservable = Helper.getBtcApi().getData();
+//                .subscribe(example -> {
+//                    Timber.i("getBitcois: %s", example);
+//                });
+
+        Observable.zip(valutaFullObservable, currentObservable, btcObservable, (valuta, valCurs, example) -> {
+
+           List<Valute> currentRateList = valCurs.valute;
+
+            Valute rub = new Valute();
+            rub.value = "1";
+            rub.nominal = "1";
+            rub.name = "Российский рубль";
+            rub.charcode = "RUB";
+            currentRateList.add(3,rub);
+
+
+            Valute btc = new Valute();
+            btc.value = example.getRUB().getLast().toString();
+            btc.nominal = "1";
+            btc.name = "Bitcoin";
+            btc.charcode = "BTC";
+            currentRateList.add(4,btc);
+
+            Timber.i("getActualData: %s",btc);
+
+
+            return currentRateList;
+        })
+//                .flatMap(valutes -> Observable.fromIterable(valutes))
+//                .filter(valute -> {
+//
+//                    Currency instance;
+//                    try {
+//                        instance = Currency.getInstance(valute.charcode);
+//                    } catch (Exception e) {
+//
+//                        return false;
+//                    }
+//                    return Currency.getAvailableCurrencies().contains(instance);
+//                })
+
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(valuta -> {
-
-                    currentValuteData = valuta;
-                    Timber.i(valuta.name);
-                }, Throwable::printStackTrace);
-
-
-        cbrApi.getCurrentRates(Helper.getActualTime())
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .map(valCurs -> {
-                    ValCurs valCurs1 = valCurs;
-                    List<Valute> valutes = valCurs1.valute;
-
-                    Valute rub = new Valute();
-                    rub.value = "1";
-                    rub.nominal = "1";
-                    rub.name = "Российский рубль";
-                    rub.charcode = "RUB";
-                    valutes.add(rub);
-
-                    valCurs1.valute = valutes;
-
-                    return valCurs1;
-
-                })
-                .subscribe(valCurs -> {
-
-                    currentRateList = valCurs.valute;
-
-                    Timber.i(valCurs.name);
-                }, Throwable::printStackTrace);
+                .subscribe(v -> {
+                    currentRateList = v;
+                    showValuteRates(currentRateList);
+                    Timber.i(String.valueOf(v));
+                },Throwable::printStackTrace);
 
     }
 
 
     private void showDynamicRates() {
 
+
         CbrApi cbrApi = Helper.getCbrApi();
-//
-        cbrApi.getValutesFullData()
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .map(valuta -> {
-                    List<Item> items = valuta.getItems();
-                    Timber.i(String.valueOf(items));
-                    return valuta;
-                })
-                .subscribe(
-                        valuta -> {},
-                        Throwable::printStackTrace
-                );
+////
+//        Single<Valuta> map = cbrApi.getValutesFullData()
+//                .subscribeOn(Schedulers.io())
+//                .observeOn(AndroidSchedulers.mainThread())
+//                .map(valuta -> {
+//                    List<Item> items = valuta.getItems();
+//                    Timber.i(String.valueOf(items));
+//                    return valuta;
+//                });
+//                .subscribe(
+//                        valuta -> {
+//                        },
+//                        Throwable::printStackTrace
+//                );
 //
         String valuteCode = "R01235";
 
-        cbrApi.getPeriodRx("01.01.2010","01.01.2011", valuteCode)
+        Single<ValCursPeriod> valCursPeriodSingle = cbrApi.getPeriodRx("01.01.2010", "01.01.2011", valuteCode)
                 .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(valCursPeriod -> {
-                    Timber.i(String.valueOf(valCursPeriod.records));
-                },Throwable::printStackTrace);
+                .observeOn(AndroidSchedulers.mainThread());
 
+//                .subscribe(valCursPeriod -> {
+//                    Timber.i(String.valueOf(valCursPeriod.records));
+//                }, Throwable::printStackTrace);
+
+//        Observable.merge();
 
         ArrayList items = new ArrayList();
         items.add(new CalcItem(currentRateList));
@@ -241,39 +331,9 @@ public class MainActivity extends LifecycleActivity {
 
     public void getCurrentValuteCurses() {
 
-
         if (null == currentRateList) {
 
-            Calendar instance = Calendar.getInstance();
-            int day = instance.get(Calendar.DAY_OF_MONTH);
-            int month = instance.get(Calendar.MONTH);
-            int year = instance.get(Calendar.YEAR);
-
-            String actualTime = Helper.getActualTime();
-
-            CbrApi cbrApi = Helper.getCbrApi();
-
-            Timber.i("time %s", actualTime);
-
-            cbrApi.getCurrentRates(actualTime)
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(valutes -> {
-                        Timber.i(valutes.valute.toString());
-
-                        currentRateList = valutes.valute;
-
-                        Valute rub = new Valute();
-                        rub.value = "1";
-                        rub.nominal = "1";
-                        rub.name = "Ruble";
-                        rub.charcode = "RUB";
-
-                        currentRateList.add(rub);
-
-
-                        showValuteRates(currentRateList);
-                    });
+            getActualData();
 
         } else {
             showValuteRates(currentRateList);
@@ -317,21 +377,11 @@ public class MainActivity extends LifecycleActivity {
 
 
         Observable.fromIterable(currentRateList)
-                .filter(valute -> {
 
-                    Currency instance;
-                    try {
-                        instance = Currency.getInstance(valute.charcode);
-                    } catch (Exception e){
-
-                        return false;
-                    }
-                    return Currency.getAvailableCurrencies().contains(instance);
-                })
                 .map(valute -> {
 //                    Currency.getInstance(valute.charcode);
                     Valute newVal = valute;
-                    Timber.i("VALUTE CONTROL: %s",newVal);
+                    Timber.i("VALUTE CONTROL: %s", newVal);
                     return newVal;
                 })
                 .map(valute -> {
@@ -348,19 +398,18 @@ public class MainActivity extends LifecycleActivity {
                 })
                 .doOnComplete(() -> adapter.set(iItems))
                 .subscribe(e -> {
-                    if (e.realmValute.charcode.equals("EUR")){
-                        iItems.set(1,e);
+                    if (e.realmValute.charcode.equals("EUR")) {
+                        iItems.set(1, e);
 
-                    } else
-                        if (e.realmValute.charcode.equals("USD")){
-                        iItems.set(0,e);
+                    } else if (e.realmValute.charcode.equals("USD")) {
+                        iItems.set(0, e);
 
-                    }  else {
+                    } else {
                         iItems.add(e);
 
                     }
 
-                },Throwable::printStackTrace);
+                }, Throwable::printStackTrace);
 
     }
 
@@ -435,5 +484,13 @@ public class MainActivity extends LifecycleActivity {
 //
 //    }
 
+
+    void getBitcois() {
+
+        Helper.getBtcApi().getData()
+                .subscribe(example -> {
+                    Timber.i("getBitcois: %s", example);
+                });
+    }
 
 }

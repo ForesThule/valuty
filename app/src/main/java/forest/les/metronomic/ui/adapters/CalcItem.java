@@ -1,6 +1,7 @@
 package forest.les.metronomic.ui.adapters;
 
 import android.content.Context;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.AdapterView;
@@ -9,7 +10,11 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import com.jakewharton.rxbinding2.support.v7.widget.RxRecyclerView;
+import com.jakewharton.rxbinding2.support.v7.widget.RxRecyclerViewAdapter;
+import com.jakewharton.rxbinding2.view.RxView;
 import com.jakewharton.rxbinding2.widget.RxTextView;
+import com.mikepenz.fastadapter.commons.adapters.FastItemAdapter;
 import com.mikepenz.fastadapter.items.AbstractItem;
 
 import java.math.BigDecimal;
@@ -73,6 +78,7 @@ public class CalcItem extends AbstractItem<CalcItem, CalcItem.ViewHolder> {
         Context context = viewHolder.view.getContext();
 
         tv_output = viewHolder.tv_output;
+        RecyclerView rvCalc = viewHolder.rvCalc;
 
         spinnerInput = viewHolder.spinnerInput;
         spinnerOut = viewHolder.spinnerOutput;
@@ -159,7 +165,6 @@ public class CalcItem extends AbstractItem<CalcItem, CalcItem.ViewHolder> {
         Timber.i("bindView: %s", spinnerInput);
         Timber.i("bindView: %s", spinnerOut);
 
-
         spinnerInput.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -216,6 +221,16 @@ public class CalcItem extends AbstractItem<CalcItem, CalcItem.ViewHolder> {
 
                         },
                         Throwable::printStackTrace);
+
+
+        FastItemAdapter adapter = new FastItemAdapter();
+        rvCalc.setLayoutManager(new LinearLayoutManager(context,LinearLayoutManager.VERTICAL,true));
+        rvCalc.setAdapter(adapter);
+
+
+        Observable.fromIterable(currentValutesRates)
+                .map(RxCalcItem::new)
+                .subscribe(adapter::add);
 
 
 //        adapterInput.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -285,6 +300,8 @@ public class CalcItem extends AbstractItem<CalcItem, CalcItem.ViewHolder> {
         holder.editText.setText(null);
 
     }
+
+
 
     public String calculate() {
 
@@ -367,6 +384,9 @@ public class CalcItem extends AbstractItem<CalcItem, CalcItem.ViewHolder> {
 
         @BindView(R.id.et_value)
         EditText editText;
+
+        @BindView(R.id.rv_calc)
+        RecyclerView rvCalc;
 
         public ViewHolder(View view) {
             super(view);

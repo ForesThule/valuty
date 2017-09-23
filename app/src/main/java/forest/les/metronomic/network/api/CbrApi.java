@@ -20,10 +20,10 @@ public interface CbrApi {
     Call<ValCurs> getRatesOnData(@Query("date_req") String date_req);
 
     @GET("scripts/XML_daily_eng.asp")
-    Single<ValCurs> getCurrentRates(@Query("date_req") String date_req);
+    Observable<ValCurs> getCurrentRates(@Query("date_req") String date_req);
 
     @GET("/scripts/XML_valFull.asp")
-    Single<Valuta> getValutesFullData();
+    Observable<Valuta> getValutesFullData();
 
     @GET("/scripts/XML_dynamic.asp")
     Call<ValCursPeriod> getRatesOnPeriod(@Query("date_req1") String date_req1, @Query("date_req2") String date_req2, @Query("VAL_NM_RQ") String VAL_NM_RQ);
