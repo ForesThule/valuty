@@ -47,6 +47,9 @@ public class SampleItem extends AbstractItem<SampleItem, SampleItem.ViewHolder> 
         //set the text for the name
         TextView name = viewHolder.name;
         TextView value = viewHolder.value;
+        TextView charcode = viewHolder.charcode;
+
+        charcode.setText(realmValute.charcode);
 
         String nm = realmValute.name;
 
@@ -86,18 +89,20 @@ public class SampleItem extends AbstractItem<SampleItem, SampleItem.ViewHolder> 
 
         private View view;
 
+        @BindView(R.id.tv_money_name)
         TextView name;
 
         @BindView(R.id.tv_money_value)
         TextView value;
+
+        @BindView(R.id.tv_money_charcode)
+        TextView charcode;
 
         public ViewHolder(View view) {
             super(view);
             ButterKnife.bind(this, view);
             this.view = view;
 
-            name = (TextView) view.findViewById(R.id.tv_money_name);
-            value = (TextView) view.findViewById(R.id.tv_money_value);
         }
     }
 }

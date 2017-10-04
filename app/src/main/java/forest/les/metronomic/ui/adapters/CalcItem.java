@@ -78,7 +78,7 @@ public class CalcItem extends AbstractItem<CalcItem, CalcItem.ViewHolder> {
         Context context = viewHolder.view.getContext();
 
         tv_output = viewHolder.tv_output;
-        RecyclerView rvCalc = viewHolder.rvCalc;
+//        RecyclerView rvCalc = viewHolder.rvCalc;
 
         spinnerInput = viewHolder.spinnerInput;
         spinnerOut = viewHolder.spinnerOutput;
@@ -106,7 +106,6 @@ public class CalcItem extends AbstractItem<CalcItem, CalcItem.ViewHolder> {
                     } catch (Exception e) {
                         return false;
                     }
-
                 })
                 .subscribe(valute -> {
 
@@ -116,11 +115,9 @@ public class CalcItem extends AbstractItem<CalcItem, CalcItem.ViewHolder> {
                             String displayName = instance.getDisplayName(Locale.getDefault());
                             String symbol = instance.getSymbol(Locale.getDefault());
 
-
                             spinnerDataList.add(name);
 
                             adapterInput.notifyDataSetChanged();
-
                         },
                         Throwable::printStackTrace);
 
@@ -195,7 +192,6 @@ public class CalcItem extends AbstractItem<CalcItem, CalcItem.ViewHolder> {
 
         editText = viewHolder.editText;
 
-
         RxTextView.textChanges(editText)
                 .map(charSequence -> charSequence.toString())
 //                .filter(s -> !s.equals(""))
@@ -207,11 +203,9 @@ public class CalcItem extends AbstractItem<CalcItem, CalcItem.ViewHolder> {
                                 Timber.i("EMPTY TEXT");
                                 tv_output.setText("");
                                 tv_output.invalidate();
-
                             } else {
                                 String message = aLong;
                                 Timber.i(message);
-
                                 tv_output.setText(message);
                             }
 
@@ -224,13 +218,13 @@ public class CalcItem extends AbstractItem<CalcItem, CalcItem.ViewHolder> {
 
 
         FastItemAdapter adapter = new FastItemAdapter();
-        rvCalc.setLayoutManager(new LinearLayoutManager(context,LinearLayoutManager.VERTICAL,true));
-        rvCalc.setAdapter(adapter);
 
-
-        Observable.fromIterable(currentValutesRates)
-                .map(RxCalcItem::new)
-                .subscribe(adapter::add);
+//        rvCalc.setLayoutManager(new LinearLayoutManager(context,LinearLayoutManager.VERTICAL,true));
+//        rvCalc.setAdapter(adapter);
+//
+//        Observable.fromIterable(currentValutesRates)
+//                .map(RxCalcItem::new)
+//                .subscribe(adapter::add);
 
 
 //        adapterInput.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -369,32 +363,23 @@ public class CalcItem extends AbstractItem<CalcItem, CalcItem.ViewHolder> {
     //The viewHolder used for this item. This viewHolder is always reused by the RecyclerView so scrolling is blazing fast
     protected static class ViewHolder extends RecyclerView.ViewHolder {
 
-
         private View view;
 
         @BindView(R.id.et_value_output)
         TextView tv_output;
-
         @BindView(R.id.spin_valutes_input)
         Spinner spinnerInput;
-
-
         @BindView(R.id.spin_valutes_output)
         Spinner spinnerOutput;
-
         @BindView(R.id.et_value)
         EditText editText;
-
-        @BindView(R.id.rv_calc)
-        RecyclerView rvCalc;
+//        @BindView(R.id.rv_calc)
+//        RecyclerView rvCalc;
 
         public ViewHolder(View view) {
             super(view);
             ButterKnife.bind(this, view);
             this.view = view;
-
         }
-
     }
-
 }
