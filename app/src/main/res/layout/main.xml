@@ -2,12 +2,31 @@
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
+    <!--android:background="@color/blue_grey_900"-->
 <LinearLayout
     android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     tools:context="forest.les.metronomic.ui.MainActivity">
+
+    <android.support.v7.widget.ActionBarContainer
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <!--<TextView-->
+            <!--android:id="@+id/tb_currentValuteTitle"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content" />-->
+
+        <!--<EditText-->
+            <!--android:id="@+id/tollbar_et"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:hint="ENTER"-->
+            <!--/>-->
+
+    </android.support.v7.widget.ActionBarContainer>
 
     <FrameLayout
         android:id="@+id/content"
@@ -22,6 +41,13 @@
 
 
 </android.support.v7.widget.RecyclerView>
+
+        <!--<ListView-->
+            <!--android:orientation="vertical"-->
+            <!--android:id="@+id/linearLayout"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content">-->
+        <!--</ListView>-->
 
     </FrameLayout>
 

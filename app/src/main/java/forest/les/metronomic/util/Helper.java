@@ -1,9 +1,11 @@
 package forest.les.metronomic.util;
 
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import forest.les.metronomic.BuildConfig;
+import forest.les.metronomic.model.Valute;
 import forest.les.metronomic.network.api.BitcoinApi;
 import forest.les.metronomic.network.api.CbrApi;
 import okhttp3.OkHttpClient;
@@ -12,6 +14,7 @@ import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.converter.simplexml.SimpleXmlConverterFactory;
+import timber.log.Timber;
 
 
 /**
@@ -71,6 +74,44 @@ public class Helper {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd.MM.yyyy");
         return  simpleDateFormat.format(new Date());
     }
+
+    public static String calculate(String input, Valute inpValute, Valute outValute) {
+
+        String value = input;
+
+        if (value.equals("")){
+            return "";
+        }
+
+        Timber.i(inpValute.toString());
+
+        Double doubleValue = Double.parseDouble(value);
+        BigDecimal decValue = BigDecimal.valueOf(doubleValue);
+
+        Double inValuteDouble = Double.parseDouble(inpValute.value.replace(",", "."));
+        Double inNominalDouble = Double.parseDouble(inpValute.nominal);
+        BigDecimal inValuteDec = BigDecimal.valueOf(inValuteDouble);
+        BigDecimal inNominalDec = BigDecimal.valueOf(inNominalDouble);
+        BigDecimal multiply = decValue.multiply(inValuteDec);
+        BigDecimal inRubles = multiply.divide(inNominalDec, BigDecimal.ROUND_HALF_UP);
+
+
+        Double outValuteDouble = Double.parseDouble(outValute.value.replace(",", "."));
+        Double outNominal = Double.parseDouble(outValute.nominal);
+        BigDecimal decOutNominal = BigDecimal.valueOf(outNominal);
+        BigDecimal outValuteDec = BigDecimal.valueOf(outValuteDouble);
+        BigDecimal outInRubles = outValuteDec.divide(decOutNominal, BigDecimal.ROUND_HALF_UP);
+
+
+        BigDecimal divide = inRubles.divide(outInRubles, BigDecimal.ROUND_HALF_UP).setScale(2, BigDecimal.ROUND_HALF_UP);
+
+        Timber.i("calculate: %s %s", inValuteDec, outValuteDec);
+
+        Timber.i("calculate: %s", divide);
+
+        return divide.toString();
+    }
+
 
 
 }

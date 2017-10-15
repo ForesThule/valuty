@@ -9,7 +9,7 @@ import com.mikepenz.fastadapter.items.AbstractItem;
 
 import java.util.List;
 
-import butterknife.BindView;
+import butterknife.Bind;
 import butterknife.ButterKnife;
 import forest.les.metronomic.R;
 import forest.les.metronomic.model.Valute;
@@ -70,10 +70,10 @@ public class DynamicItem extends AbstractItem<DynamicItem, DynamicItem.ViewHolde
 
         TextView name;
 
-        @BindView(R.id.valute_first)
+        @Bind(R.id.valute_first)
         ExpandableListView expandableListViewFrs;
 
-        @BindView(R.id.valute_second)
+        @Bind(R.id.valute_second)
         ExpandableListView expandableListViewSec;
 
         public ViewHolder(View view) {

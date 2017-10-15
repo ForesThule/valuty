@@ -1,6 +1,5 @@
 package forest.les.metronomic.data;
 
-import android.arch.lifecycle.LiveData;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.support.annotation.Nullable;

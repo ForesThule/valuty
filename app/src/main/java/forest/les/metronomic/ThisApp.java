@@ -2,10 +2,11 @@ package forest.les.metronomic;
 
 import android.app.Application;
 import android.content.Context;
+import android.os.SystemClock;
 
-import com.orhanobut.hawk.Hawk;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import forest.les.metronomic.model.ValCurs;
 import forest.les.metronomic.network.api.BitcoinApi;
@@ -32,6 +33,8 @@ public class ThisApp extends Application {
 
         super.onCreate();
 
+        // Don't do this! This is just so cold launches take some time
+//        SystemClock.sleep(TimeUnit.SECONDS.toMillis(3));
 
 //        RealmConfiguration config = new RealmConfiguration
 //                .Builder()
@@ -43,7 +46,6 @@ public class ThisApp extends Application {
         api = Helper.getCbrApi();
 
         btcApi = Helper.getBtcApi();
-
 
 
         if (BuildConfig.DEBUG) {

@@ -3,6 +3,8 @@ package forest.les.metronomic.ui.adapters;
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
+import android.view.animation.AccelerateInterpolator;
+import android.view.animation.BounceInterpolator;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
@@ -10,7 +12,9 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.jakewharton.rxbinding2.widget.RxTextView;
+import com.mikepenz.fastadapter.FastAdapter;
 import com.mikepenz.fastadapter.items.AbstractItem;
+import com.mikepenz.materialize.holder.StringHolder;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -18,20 +22,20 @@ import java.util.Currency;
 import java.util.List;
 import java.util.Locale;
 
-import butterknife.BindView;
+import butterknife.Bind;
 import butterknife.ButterKnife;
 import forest.les.metronomic.R;
 import forest.les.metronomic.model.Item;
 import forest.les.metronomic.model.Valute;
-import forest.les.metronomic.network.api.CbrApi;
-import forest.les.metronomic.util.Helper;
+import forest.les.metronomic.ui.MainActivity;
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 import timber.log.Timber;
 
 public class RxCalcItem extends AbstractItem<RxCalcItem, RxCalcItem.ViewHolder> {
-    private final Valute currentValute;
+    public final Valute currentValute;
+    private final MainActivity activity;
     public String name = "";
     public Valute realmValute;
     private List<Valute> currentValutesRates;
@@ -46,10 +50,26 @@ public class RxCalcItem extends AbstractItem<RxCalcItem, RxCalcItem.ViewHolder> 
     private ArrayAdapter<String> adapterInput;
     private ArrayAdapter<String> adapterOut;
 
+    StringHolder title;
+    StringHolder value;
 
-    public RxCalcItem(Valute valute) {
 
+    public RxCalcItem(MainActivity activity, Valute valute) {
+
+        this.activity = activity;
         currentValute = valute;
+
+        this.title = new StringHolder(valute.name);
+        this.value = new StringHolder(valute.value);
+    }
+
+    public RxCalcItem withName(String name){
+        title.setText(name);
+        return this;
+    }
+    public RxCalcItem withValue(String value){
+        this.value.setText(value);
+        return this;
     }
 
     //The unique ID for this type of item
@@ -65,6 +85,16 @@ public class RxCalcItem extends AbstractItem<RxCalcItem, RxCalcItem.ViewHolder> 
     }
 
 
+    @Override
+    public RxCalcItem withSetSelected(boolean selected) {
+        Timber.i("onSelect: valute: %s select: %s",currentValute.name,selected);
+        if (selected){
+
+        }
+        return super.withSetSelected(selected);
+
+    }
+
     //The logic to bind your data to the view
     @Override
     public void bindView(ViewHolder viewHolder, List<Object> payloads) {
@@ -73,13 +103,63 @@ public class RxCalcItem extends AbstractItem<RxCalcItem, RxCalcItem.ViewHolder> 
 
         Context context = viewHolder.view.getContext();
 
-        TextView valute_value = viewHolder.valute_value;
+        EditText valute_value = viewHolder.valute_value;
         TextView valute_name = viewHolder.valute_name;
 
-        valute_name.setText(currentValute.name);
-        valute_value.setText(currentValute.value);
+//        String name = currentValute.name;
+//        String value = currentValute.value;
+//
+//        if (null!=valute_name&&null!=valute_value){
+//            valute_name.setText(null==name?"":name);
+//            valute_value.setText(null==value?"":value);
+//        }
 
 
+
+
+        title.applyTo(valute_name);
+        value.applyTo(valute_value);
+
+        withOnItemClickListener((v, adapter, item, position) -> {
+
+            valute_value.setText("");
+
+            if (isSelected()){
+
+                valute_value.findFocus();
+                
+                RxTextView.textChanges(valute_value)
+                        .subscribe(charSequence -> {
+
+                            withValue(charSequence.toString());
+
+                            MainActivity activity = (MainActivity) context;
+
+                            activity.updateCalculatorList(viewHolder.getAdapterPosition(),charSequence.toString(),currentValute);
+
+                            Timber.i("onTextChange %s",charSequence);
+                        }, Throwable::printStackTrace);
+            }
+
+
+
+//            if (isSelected()){
+//                Timber.i("bindView: SELECTED!");
+//                valute_value.setEnabled(true);
+//            }
+
+            valute_name.animate()
+//                    .setInterpolator(new AccelerateInterpolator())
+                    .setInterpolator(new BounceInterpolator())
+                    .scaleX(1.1f)
+                    .alpha(10)
+
+                    .scaleY(1.1f)
+                    .setDuration(1500)
+                    .start();
+
+            return true;
+        });
     }
 
     private void setOutput() {
@@ -89,7 +169,6 @@ public class RxCalcItem extends AbstractItem<RxCalcItem, RxCalcItem.ViewHolder> 
 //                    calculate();
         } else {
             tv_output.setText(editText.getText().toString());
-
         }
     }
 
@@ -136,6 +215,7 @@ public class RxCalcItem extends AbstractItem<RxCalcItem, RxCalcItem.ViewHolder> 
 
         holder.valute_name.setText(null);
         holder.valute_value.setText(null);
+//        holder.valute_value.setEnabled(false);
 
     }
 
@@ -210,10 +290,10 @@ public class RxCalcItem extends AbstractItem<RxCalcItem, RxCalcItem.ViewHolder> 
 
         private View view;
 
-        @BindView(R.id.valute_value)
-        TextView valute_value;
+        @Bind(R.id.valute_value)
+        EditText valute_value;
 
-        @BindView(R.id.valute_name)
+        @Bind(R.id.valute_name)
         TextView valute_name;
 
 

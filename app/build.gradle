@@ -1,6 +1,6 @@
 //noinspection GradleCompatible
 apply plugin: 'com.android.application'
-//apply plugin: 'com.neenbedankt.android-apt'
+apply plugin: 'com.neenbedankt.android-apt'
 apply plugin: 'me.tatarka.retrolambda'
 apply plugin: 'realm-android'
 
@@ -9,6 +9,10 @@ apply plugin: 'realm-android'
 repositories {
     jcenter()
     mavenCentral()
+
+    maven {
+        url  "http://dl.bintray.com/ahmedrizwan/maven"
+    }
 }
 
 android {
@@ -18,7 +22,7 @@ android {
         applicationId "forest.les.metronomic"
         minSdkVersion 21
         targetSdkVersion 25
-        versionCode 3
+        versionCode 6
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
@@ -29,8 +33,14 @@ android {
 
         multiDexEnabled true
 
+        packagingOptions {
+            exclude 'META-INF/rxjava.properties'
+        }
 
     }
+
+
+
     buildTypes {
         release {
             minifyEnabled false
@@ -56,21 +66,21 @@ dependencies {
     compile 'com.diogobernardino:williamchart:2.5.0'
 
 
-    compile "android.arch.lifecycle:runtime:1.0.0-alpha5"
-    compile "android.arch.lifecycle:extensions:1.0.0-alpha5"
-    annotationProcessor "android.arch.lifecycle:compiler:1.0.0-alpha5"
-
-    compile "android.arch.persistence.room:runtime:1.0.0-alpha5"
-    annotationProcessor "android.arch.persistence.room:compiler:1.0.0-alpha5"
-
-    compile "android.arch.persistence.room:rxjava2:1.0.0-alpha5"
+//    compile "android.arch.lifecycle:runtime:1.0.0-alpha5"
+//    compile "android.arch.lifecycle:extensions:1.0.0-alpha5"
+//    annotationProcessor "android.arch.lifecycle:compiler:1.0.0-alpha5"
+//
+//    compile "android.arch.persistence.room:runtime:1.0.0-alpha5"
+//    annotationProcessor "android.arch.persistence.room:compiler:1.0.0-alpha5"
+//
+//    compile "android.arch.persistence.room:rxjava2:1.0.0-alpha5"
 
 
     compile 'com.stephentuso:welcome:1.4.1'
 
 
 
-    compile 'com.borax12.materialdaterangepicker:library:1.9'
+//    compile 'com.borax12.materialdaterangepicker:library:1.9'
 
     compile 'com.squareup:android-times-square:1.6.5@aar'
 
@@ -82,7 +92,7 @@ dependencies {
 
     compile 'com.squareup.okhttp3:logging-interceptor:3.0.1'
 
-    compile 'im.dacer:AndroidCharts:1.0.3'
+//    compile 'im.dacer:AndroidCharts:1.0.3'
 
     compile('com.squareup.retrofit2:converter-simplexml:2.3.0') {
         exclude group: 'xpp3', module: 'xpp3'
@@ -96,10 +106,11 @@ dependencies {
 
     compile 'com.squareup.moshi:moshi:1.5.0'
 
-    compile 'com.jakewharton:butterknife:8.5.1'
-    annotationProcessor 'com.jakewharton:butterknife-compiler:8.6.0'
+//    compile 'com.jakewharton:butterknife:8.8.1'
+//    annotationProcessor 'com.jakewharton:butterknife-compiler:8.8.1'
+    compile'com.jakewharton:butterknife:7.0.1'
+
     compile 'com.jakewharton.timber:timber:4.5.1'
-    compile 'com.jakewharton:butterknife:8.4.0'
 
 //    Platform bindings:
 
@@ -121,8 +132,8 @@ dependencies {
     compile 'com.jakewharton.rxbinding2:rxbinding-leanback-v17:2.0.0'
 
 
-    compile "io.realm:realm-android-library:0.87.4@aar"
-    compile "io.realm:realm-annotations:0.87.4"
+//    compile "io.realm:realm-android-library:0.87.4@aar"
+//    compile "io.realm:realm-annotations:0.87.4"
 
 
 
@@ -138,23 +149,25 @@ dependencies {
     compile 'com.mikepenz:materialize:1.0.1@aar'
 
 
-    compile 'com.github.PhilJay:MPAndroidChart-Realm:v2.0.2@aar'
-    compile 'com.github.PhilJay:MPAndroidChart:v3.0.2'
+//    compile 'com.github.PhilJay:MPAndroidChart-Realm:v2.0.2@aar'
+//    compile 'com.github.PhilJay:MPAndroidChart:v3.0.2'
 
-    compile 'com.anupcowkur:reservoir:3.1.0'
+//    compile 'com.anupcowkur:reservoir:3.1.0'
 
 
-    compile 'com.orhanobut:hawk:2.0.1'
+//    compile 'com.orhanobut:hawk:2.0.1'
 
     compile 'io.reactivex.rxjava2:rxjava:2.1.0'
     compile 'io.reactivex.rxjava2:rxandroid:2.0.1'
-    compile 'com.tbruyelle.rxpermissions2:rxpermissions:0.9.1@aar'
 
 
-    compile 'com.trello.rxlifecycle2:rxlifecycle:2.0.1'
-    compile 'com.trello.rxlifecycle2:rxlifecycle-android:2.0.1'
-    compile 'com.trello.rxlifecycle2:rxlifecycle-components:2.0.1'
+//    compile 'com.tbruyelle.rxpermissions2:rxpermissions:0.9.1@aar'
 
+//    compile 'com.trello.rxlifecycle2:rxlifecycle:2.0.1'
+//    compile 'com.trello.rxlifecycle2:rxlifecycle-android:2.0.1'
+//    compile 'com.trello.rxlifecycle2:rxlifecycle-components:2.0.1'
+
+    compile 'com.minimize.android:rxrecycler-adapter:1.2.2'
 
     compile fileTree(dir: 'libs', include: ['*.jar'])
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {

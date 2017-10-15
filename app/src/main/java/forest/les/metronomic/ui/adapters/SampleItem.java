@@ -8,7 +8,7 @@ import com.mikepenz.fastadapter.items.AbstractItem;
 
 import java.util.List;
 
-import butterknife.BindView;
+import butterknife.Bind;
 import butterknife.ButterKnife;
 import forest.les.metronomic.R;
 import forest.les.metronomic.model.Valute;
@@ -88,7 +88,7 @@ public class SampleItem extends AbstractItem<SampleItem, SampleItem.ViewHolder> 
 
         TextView name;
 
-        @BindView(R.id.tv_money_value)
+        @Bind(R.id.tv_money_value)
         TextView value;
 
         public ViewHolder(View view) {

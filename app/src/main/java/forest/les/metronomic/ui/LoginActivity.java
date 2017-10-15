@@ -24,7 +24,7 @@ import com.stephentuso.welcome.WelcomeHelper;
 
 import java.util.regex.Pattern;
 
-import butterknife.BindView;
+import butterknife.Bind;
 import butterknife.ButterKnife;
 import forest.les.metronomic.R;
 import io.reactivex.Observable;
@@ -37,8 +37,8 @@ import static android.util.Patterns.EMAIL_ADDRESS;
 
 public class LoginActivity extends AppCompatActivity {
 
-    @BindView(R.id.et_login) EditText etLogin;
-    @BindView(R.id.et_password) EditText ePassword;
+    @Bind(R.id.et_login) EditText etLogin;
+    @Bind(R.id.et_password) EditText ePassword;
     BottomNavigationView navigation;
     WelcomeHelper welcomeScreen;
 

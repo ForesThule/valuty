@@ -23,7 +23,7 @@ import java.util.Currency;
 import java.util.List;
 import java.util.Locale;
 
-import butterknife.BindView;
+import butterknife.Bind;
 import butterknife.ButterKnife;
 import forest.les.metronomic.R;
 import forest.les.metronomic.model.Item;
@@ -228,10 +228,10 @@ public class CalcItem extends AbstractItem<CalcItem, CalcItem.ViewHolder> {
         rvCalc.setAdapter(adapter);
 
 
-        Observable.fromIterable(currentValutesRates)
-                .map(RxCalcItem::new)
-                .subscribe(adapter::add);
-
+//        Observable.fromIterable(currentValutesRates)
+//                .map(RxCalcItem::new)
+//                .subscribe(adapter::add);
+//
 
 //        adapterInput.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
@@ -372,20 +372,20 @@ public class CalcItem extends AbstractItem<CalcItem, CalcItem.ViewHolder> {
 
         private View view;
 
-        @BindView(R.id.et_value_output)
+        @Bind(R.id.et_value_output)
         TextView tv_output;
 
-        @BindView(R.id.spin_valutes_input)
+        @Bind(R.id.spin_valutes_input)
         Spinner spinnerInput;
 
 
-        @BindView(R.id.spin_valutes_output)
+        @Bind(R.id.spin_valutes_output)
         Spinner spinnerOutput;
 
-        @BindView(R.id.et_value)
+        @Bind(R.id.et_value)
         EditText editText;
 
-        @BindView(R.id.rv_calc)
+        @Bind(R.id.rv_calc)
         RecyclerView rvCalc;
 
         public ViewHolder(View view) {

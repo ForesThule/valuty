@@ -20,7 +20,7 @@ import timber.log.Timber;
 @Root(name = "Valute")
 public class Valute {
     @Element(name = "Value")
-    public String value;
+    public  String value;
 
     @Attribute(name = "ID")
     public String id;
@@ -36,6 +36,9 @@ public class Valute {
 
     @Element(name = "NumCode")
     public String numcode;
+
+
+    public String calculateValue;
 
 
     //calculate this -> incoming valute
