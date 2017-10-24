@@ -1,26 +1,39 @@
 package forest.les.metronomic.ui.adapters;
 
 import android.content.Context;
+import android.graphics.Color;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.BounceInterpolator;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import com.jakewharton.rxbinding2.InitialValueObservable;
 import com.jakewharton.rxbinding2.widget.RxTextView;
 import com.mikepenz.fastadapter.FastAdapter;
+import com.mikepenz.fastadapter.commons.utils.FastAdapterUIUtils;
 import com.mikepenz.fastadapter.items.AbstractItem;
+import com.mikepenz.fastadapter.listeners.ClickEventHook;
 import com.mikepenz.materialize.holder.StringHolder;
+import com.mikepenz.materialize.util.UIUtils;
+
+import org.reactivestreams.Subscription;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Currency;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -30,47 +43,61 @@ import forest.les.metronomic.model.Valute;
 import forest.les.metronomic.ui.MainActivity;
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
+import rx.subscriptions.CompositeSubscription;
 import timber.log.Timber;
 
 public class RxCalcItem extends AbstractItem<RxCalcItem, RxCalcItem.ViewHolder> {
     public final Valute currentValute;
     private final MainActivity activity;
-    public String name = "";
-    public Valute realmValute;
-    private List<Valute> currentValutesRates;
-    private List<Item> currentItems;
+    private final long numcode;
+    //    public String name = "";
+
     volatile Valute inputValute;
     volatile Valute outputValute;
-    private List<String> spinnerDataList;
-    private EditText editText;
-    private TextView tv_output;
-    private Spinner spinnerInput;
-    private Spinner spinnerOut;
-    private ArrayAdapter<String> adapterInput;
-    private ArrayAdapter<String> adapterOut;
+    private StringHolder title;
+    private StringHolder value;
 
-    StringHolder title;
-    StringHolder value;
+    public EditText valute_value;
+    private TextView valute_name;
+
+    private InputMethodManager imm;
+
+    private Disposable subscribe;
+    private CompositeDisposable compositeDisposable;
 
 
     public RxCalcItem(MainActivity activity, Valute valute) {
 
+        compositeDisposable = new CompositeDisposable();
         this.activity = activity;
-        currentValute = valute;
+        this.currentValute = valute;
 
         this.title = new StringHolder(valute.name);
         this.value = new StringHolder(valute.value);
+
+        numcode = Long.parseLong(currentValute.numcode);
+        withIdentifier(numcode);
     }
 
-    public RxCalcItem withName(String name){
+    public RxCalcItem withName(String name) {
         title.setText(name);
         return this;
     }
-    public RxCalcItem withValue(String value){
+
+    public RxCalcItem withValue(String value) {
         this.value.setText(value);
         return this;
     }
+
+//    @Override
+//    public RxCalcItem withSetSelected(boolean selected) {
+//        Timber.i("withSetSelected: %s",selected);
+//
+//        return this;
+//    }
 
     //The unique ID for this type of item
     @Override
@@ -85,145 +112,121 @@ public class RxCalcItem extends AbstractItem<RxCalcItem, RxCalcItem.ViewHolder> 
     }
 
 
-    @Override
-    public RxCalcItem withSetSelected(boolean selected) {
-        Timber.i("onSelect: valute: %s select: %s",currentValute.name,selected);
-        if (selected){
-
-        }
-        return super.withSetSelected(selected);
-
-    }
+//    @Override
+//    public RxCalcItem withSetSelected(boolean selected) {
+//        Timber.i("onSelect: valute: %s select: %s",currentValute.name,selected);
+//        if (selected){
+//            RxTvalute_value
+//        }
+//        return super.withSetSelected(selected);
+//
+//    }
 
     //The logic to bind your data to the view
     @Override
     public void bindView(ViewHolder viewHolder, List<Object> payloads) {
+
+        Timber.i("bindView: %s", currentValute.name);
         //call super so the selection is already handled for you
         super.bindView(viewHolder, payloads);
 
         Context context = viewHolder.view.getContext();
 
-        EditText valute_value = viewHolder.valute_value;
-        TextView valute_name = viewHolder.valute_name;
-
-//        String name = currentValute.name;
-//        String value = currentValute.value;
-//
-//        if (null!=valute_name&&null!=valute_value){
-//            valute_name.setText(null==name?"":name);
-//            valute_value.setText(null==value?"":value);
-//        }
+        UIUtils.setBackground(viewHolder.view, FastAdapterUIUtils.getSelectableBackground(context, Color.RED, true));
 
 
+        valute_value = viewHolder.valute_value;
+        valute_name = viewHolder.valute_name;
 
+        imm = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
 
-        title.applyTo(valute_name);
-        value.applyTo(valute_value);
+        setvalues();
 
-        withOnItemClickListener((v, adapter, item, position) -> {
+        if (isSelected()) {
 
+            valute_value.setEnabled(true);
             valute_value.setText("");
 
-            if (isSelected()){
+            valute_value.requestFocus();
 
-                valute_value.findFocus();
-                
-                RxTextView.textChanges(valute_value)
-                        .subscribe(charSequence -> {
+//            if (!imm.isActive()) {
+            imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 1);
+//                imm.showSoftInput(valute_value,InputMethodManager.SHOW_FORCED);
 
-                            withValue(charSequence.toString());
-
-                            MainActivity activity = (MainActivity) context;
-
-                            activity.updateCalculatorList(viewHolder.getAdapterPosition(),charSequence.toString(),currentValute);
-
-                            Timber.i("onTextChange %s",charSequence);
-                        }, Throwable::printStackTrace);
-            }
+//            valute_value.addTextChangedListener(textWatcher);
 
 
+            subscribe = RxTextView.textChanges(valute_value)
+                    .filter(cs -> !cs.toString().equals(""))
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribeOn(Schedulers.io())
+                    .delay(500, TimeUnit.MILLISECONDS)
+                    .subscribe(charSequence -> {
 
-//            if (isSelected()){
-//                Timber.i("bindView: SELECTED!");
-//                valute_value.setEnabled(true);
-//            }
+                        withValue(charSequence.toString());
 
-            valute_name.animate()
-//                    .setInterpolator(new AccelerateInterpolator())
-                    .setInterpolator(new BounceInterpolator())
-                    .scaleX(1.1f)
-                    .alpha(10)
+                        Timber.i("INPUT: %s", charSequence.toString());
 
-                    .scaleY(1.1f)
-                    .setDuration(1500)
-                    .start();
+                        Timber.i("%s", subscribe.toString());
 
-            return true;
-        });
-    }
+                        Timber.i("%s %d",title.getText(),compositeDisposable.size());
 
-    private void setOutput() {
-        if (!editText.getText().toString().equals("")) {
+                        activity.updateCalculatorList(viewHolder.getAdapterPosition(), charSequence.toString(), currentValute);
 
-            tv_output.setText(calculate());
-//                    calculate();
+                    }, Throwable::printStackTrace);
+
+            compositeDisposable.add(subscribe);
+
+            Timber.i("%s %s", currentValute.name, isSelected());
+
+
         } else {
-            tv_output.setText(editText.getText().toString());
+
+            valute_value.clearFocus();
+            valute_value.setEnabled(false);
+
+
         }
-    }
-
-    public void setOutputValute(int position) {
-
-        String s = spinnerDataList.get(position);
-
-        Observable.fromIterable(currentValutesRates)
-                .filter(valute -> valute.name.equals(s))
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(valute -> {
-                    outputValute = valute;
-
-                    setOutput();
-
-                    Timber.i("OutValute = %s", outputValute);
-                }, Throwable::printStackTrace);
 
     }
 
-    private void setinputValute(int position) {
-
-        String s = spinnerDataList.get(position);
-
-        Observable.fromIterable(currentValutesRates)
-                .filter(valute -> valute.name.equals(s))
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(valute -> {
-                    inputValute = valute;
-
-                    setOutput();
-
-                    Timber.i("Input Valute = %s", inputValute);
-                }, Throwable::printStackTrace);
-
+    private void setvalues() {
+        title.applyTo(valute_name);
+        value.applyTo(valute_value);
     }
+
 
     //reset the view here (this is an optional method, but recommended)
     @Override
     public void unbindView(ViewHolder holder) {
+
         super.unbindView(holder);
+//        Timber.i("unbindView: %s", currentValute.name);
+
+
+        if (!isSelected()) {
+            compositeDisposable.clear();
+
+            Timber.i("unbindView: is Selected %s", currentValute.name);
+
+        }
+
+
+//        holder.valute_value.removeTextChangedListener(textWatcher);
 
         holder.valute_name.setText(null);
         holder.valute_value.setText(null);
+        holder.valute_value.clearFocus();
+
+
 //        holder.valute_value.setEnabled(false);
 
     }
 
 
-
     public String calculate() {
 
-        String value = editText.getText().toString();
+        String value = valute_value.getText().toString();
 
         Timber.i(inputValute.toString());
 
@@ -278,6 +281,46 @@ public class RxCalcItem extends AbstractItem<RxCalcItem, RxCalcItem.ViewHolder> 
 
     }
 
+    public StringHolder getTitle() {
+        return title;
+    }
+
+    public StringHolder getValue() {
+        return value;
+    }
+
+    public static class SelectClckEvent extends ClickEventHook<RxCalcItem> {
+        @Override
+        public View onBind(@NonNull RecyclerView.ViewHolder viewHolder) {
+            if (viewHolder instanceof RxCalcItem.ViewHolder) {
+                View view = ((ViewHolder) viewHolder).valute_value;
+
+                Timber.i("onBind EventHook:");
+
+                return view;
+            }
+            return null;
+        }
+
+
+        @Override
+        public void onClick(View v, int position, FastAdapter<RxCalcItem> fastAdapter, RxCalcItem item) {
+
+            Timber.i("onClick: ");
+
+            if (!item.isSelected()) {
+                Set<Integer> selections = fastAdapter.getSelections();
+                if (!selections.isEmpty()) {
+                    int selectedPosition = selections.iterator().next();
+                    fastAdapter.deselect();
+                    Timber.i("onClick: notifyAdapter from hook");
+                    fastAdapter.notifyItemChanged(selectedPosition);
+                }
+                fastAdapter.select(position);
+            }
+        }
+    }
+
     //Init the viewHolder for this Item
     @Override
     public ViewHolder getViewHolder(View v) {
@@ -285,10 +328,10 @@ public class RxCalcItem extends AbstractItem<RxCalcItem, RxCalcItem.ViewHolder> 
     }
 
     //The viewHolder used for this item. This viewHolder is always reused by the RecyclerView so scrolling is blazing fast
-    protected static class ViewHolder extends RecyclerView.ViewHolder {
+    public static class ViewHolder extends RecyclerView.ViewHolder {
 
 
-        private View view;
+        public View view;
 
         @Bind(R.id.valute_value)
         EditText valute_value;

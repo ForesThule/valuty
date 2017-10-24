@@ -1,20 +1,36 @@
 package forest.les.metronomic.ui;
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.view.ActionMode;
+import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.helper.ItemTouchHelper;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
 import android.widget.EditText;
 
 import com.jakewharton.rxbinding2.widget.RxTextView;
+import com.mikepenz.fastadapter.FastAdapter;
+import com.mikepenz.fastadapter.IAdapter;
 import com.mikepenz.fastadapter.IItem;
 import com.mikepenz.fastadapter.commons.adapters.FastItemAdapter;
+import com.mikepenz.fastadapter.listeners.ClickEventHook;
+import com.mikepenz.fastadapter_extensions.ActionModeHelper;
+import com.mikepenz.fastadapter_extensions.drag.ItemTouchCallback;
+import com.mikepenz.fastadapter_extensions.drag.SimpleDragCallback;
+import com.mikepenz.materialize.MaterializeBuilder;
 import com.stephentuso.welcome.WelcomeHelper;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
@@ -26,6 +42,7 @@ import java.util.List;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import forest.les.metronomic.R;
+import forest.les.metronomic.data.Repository;
 import forest.les.metronomic.events.EventDynamicCurse;
 import forest.les.metronomic.model.ValCurs;
 import forest.les.metronomic.model.Valuta;
@@ -38,12 +55,14 @@ import forest.les.metronomic.ui.adapters.SampleItem;
 import forest.les.metronomic.util.Helper;
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Action;
 import io.reactivex.schedulers.Schedulers;
 import retrofit2.http.HEAD;
 import timber.log.Timber;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements ItemTouchCallback{
 
 
 //    SomeObserver someObserver = new SomeObserver(getLifecycle(), SomeObserver.Owner.ACTIVITY);
@@ -52,7 +71,7 @@ public class MainActivity extends AppCompatActivity {
     //    private PlayConfig playConfig;
 //    private ActivityMainBinding binding;
     private List<IItem> iItems;
-    private FastItemAdapter adapter;
+    public FastItemAdapter adapter;
     private RecyclerView recycler;
     private WelcomeHelper welcomeScreen;
 
@@ -68,6 +87,11 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList currentCalcItemHolder;
 
     public Valute currentValute;
+
+    private ActionModeHelper mActionModeHelper;
+    private SimpleDragCallback dragCallback;
+    private ItemTouchHelper touchHelper;
+
 
 //    @Bind(R.id.tollbar_et)
 //    EditText editText;
@@ -97,6 +121,12 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.main);
         ButterKnife.bind(this);
 
+        new MaterializeBuilder().withActivity(this).build();
+
+
+        Repository repository = new Repository();
+        repository.getdata();
+
 //        welcomeScreen = new WelcomeHelper(this, SplashActivity.class);
 //        welcomeScreen.forceShow();
 
@@ -107,6 +137,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void init() {
+
 
         Valute rub = new Valute();
         rub.value = "1";
@@ -119,12 +150,104 @@ public class MainActivity extends AppCompatActivity {
         navigation = (BottomNavigationView) findViewById(R.id.nav_main);
         recycler = (RecyclerView) findViewById(R.id.recycler);
         adapter = new FastItemAdapter();
+
+        mActionModeHelper = new ActionModeHelper(adapter, R.menu.navigation, new ActionBarCallBack());
+
+        mActionModeHelper.withAutoDeselect(true);
+
+        mActionModeHelper.withSupportSubItems(false);
+
+        dragCallback = new SimpleDragCallback(this);
+        touchHelper = new ItemTouchHelper(dragCallback);
+        touchHelper.attachToRecyclerView(recycler);
+
+        adapter.withPositionBasedStateManagement(false);
+
         adapter.setHasStableIds(true);
         adapter.withSelectable(true);
         adapter.withMultiSelect(false);
-        adapter.withSelectionListener((item, selected) -> {
+//        adapter.withItemEvent(new RxCalcItem.SelectClckEvent());
 
+        adapter.withOnPreClickListener(new FastAdapter.OnClickListener<IItem>() {
+            @Override
+            public boolean onClick(View v, IAdapter adapter, IItem item, int position) {
+                //we handle the default onClick behavior for the actionMode. This will return null if it didn't do anything and you can handle a normal onClick
+                Timber.i("withOnPreClickListener: ");
+                Boolean res = mActionModeHelper.onClick(item);
+                return res != null ? res : false;
+            }
         });
+
+        adapter.withSelectionListener((item, selected) -> {
+            if (item instanceof RxCalcItem) {
+//                IItem headerItem = ((RxCalcItem) item).getParent();
+//                if (headerItem != null) {
+                int pos = adapter.getAdapterPosition(item);
+                // Important: notify the header directly, not via the notifyadapterItemChanged!
+                // we just want to update the view and we are sure, nothing else has to be done
+                adapter.notifyItemChanged(pos);
+//                }
+            }
+        });
+
+
+//        adapter.withItemEvent(new ClickEventHook() {
+//            @Nullable
+//            @Override
+//            public View onBind(@NonNull RecyclerView.ViewHolder viewHolder) {
+//                //return the views on which you want to bind this event
+//                if (viewHolder instanceof RxCalcItem.ViewHolder) {
+//                    return viewHolder.itemView;
+//                }
+//                return null;
+//            }
+//            @Override
+//            public void onClick(View v, int position, FastAdapter fastAdapter, IItem item) {
+//                Timber.v("onClick() called with: " + "v = [" + v + "], position = [" + position + "], fastAdapter = [" + fastAdapter + "], item = [" + item + "]");
+//                RxCalcItem item1 = (RxCalcItem) item;
+//
+////                item1.valute_value.setText("");
+//
+//
+//
+//
+//                RxTextView.textChanges(item1.valute_value)
+//                        .subscribeOn(Schedulers.io())
+//                        .observeOn(AndroidSchedulers.mainThread())
+//                        .subscribe(charSequence -> {
+//                            Timber.i("onClick: %s",charSequence.toString());
+//
+//                            updateCalculatorList(position,charSequence.toString(),item1.currentValute);
+//
+//                            adapter.notifyAdapterItemRangeChanged(0,position-1);
+//                            adapter.notifyAdapterItemRangeChanged(position+1,currentRateListRx.size());
+//                        });
+//
+////                getDisposable(item1.valute_value);
+//
+//                Timber.i("onClick: data - %s", item1);
+//            }
+//        });
+//        adapter.withSelectionListener((item, selected) -> {
+//
+//        });
+
+
+//        adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
+//            @Override
+//            public void onChanged() {
+//
+//                Timber.i("onChanged: ");
+//            }
+//
+//            @Override
+//            public void onItemRangeChanged(int positionStart, int itemCount) {
+//
+//                Timber.i("registerAdapterDataObserver: %d",positionStart);
+//
+////                super.onItemRangeChanged(positionStart, itemCount);
+//            }
+//        });
 
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
         navigation.setSelectedItemId(R.id.money_rate_menu_item);
@@ -134,6 +257,13 @@ public class MainActivity extends AppCompatActivity {
         recycler.setAdapter(adapter);
         recycler.setLayoutManager(new LinearLayoutManager(this));
         recycler.addItemDecoration(new DividerItemDecoration(this, 1));
+        recycler.setItemAnimator(new DefaultItemAnimator());
+    }
+
+    @NonNull
+    private void getDisposable(EditText valute_value) {
+
+
     }
 
     private void setCurrentValute(Valute valute) {
@@ -143,76 +273,18 @@ public class MainActivity extends AppCompatActivity {
 
     private void getActualData() {
 
+
         CbrApi cbrApi = Helper.getCbrApi();
 
         Observable<Valuta> valutaFullObservable = cbrApi.getValutesFullData()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread());
-//                .subscribe(valuta -> {
-//
-//                    currentValuteData = valuta;
-//                    Timber.i(valuta.name);
-//                }, Throwable::printStackTrace);
-
 
         Observable<ValCurs> currentObservable = cbrApi.getCurrentRates(Helper.getActualTime())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread());
-//                .flatMap(valCurs -> Observable.fromIterable(valCurs.valute))
-//                .map(valute -> {
-//
-//                    List<Valute> valutes = valute.valute;
-//                    List<Valute> result = valute.valute;
-//
-//                    for (Valute val : valutes) {
-//
-//                        Currency instance;
-//                        try {
-//                            instance = Currency.getInstance(val.charcode);
-//                            if( Currency.getAvailableCurrencies().contains(instance)){
-//
-//                                result.add(val);
-//                            }
-//                        } catch (Exception e) {
-//                            e.printStackTrace();
-//                        }
-//
-//                    }
-//
-//                    valute.valute = result;
-//
-//                    return valute;
-//
-//                });
-
-//                .map(valCurs -> {
-//                    ValCurs valCurs1 = valCurs;
-//                    List<Valute> valutes = valCurs1.valute;
-//
-//                    Valute rub = new Valute();
-//                    rub.value = "1";
-//                    rub.nominal = "1";
-//                    rub.name = "Российский рубль";
-//                    rub.charcode = "RUB";
-//                    valutes.add(rub);
-//
-//                    valCurs1.valute = valutes;
-//
-//                    return valCurs1;
-//
-//                });
-//                .subscribe(valCurs -> {
-//
-//                    currentRateList = valCurs.valute;
-//
-//                    Timber.i(valCurs.name);
-//                }, Throwable::printStackTrace);
-
 
         Observable<Example> btcObservable = Helper.getBtcApi().getData();
-//                .subscribe(example -> {
-//                    Timber.i("getBitcois: %s", example);
-//                });
 
         Observable.zip(valutaFullObservable, currentObservable, btcObservable, (valuta, valCurs, example) -> {
 
@@ -221,6 +293,7 @@ public class MainActivity extends AppCompatActivity {
             Valute rub = new Valute();
             rub.value = "1";
             rub.nominal = "1";
+            rub.numcode = "99999";
             rub.name = "Российский рубль";
             rub.charcode = "RUB";
             currentRateList.add(3, rub);
@@ -229,6 +302,7 @@ public class MainActivity extends AppCompatActivity {
             Valute btc = new Valute();
             btc.value = example.getRUB().getLast().toString();
             btc.nominal = "1";
+            btc.numcode = "66666";
             btc.name = "Bitcoin";
             btc.charcode = "BTC";
             currentRateList.add(4, btc);
@@ -238,37 +312,11 @@ public class MainActivity extends AppCompatActivity {
 
             return currentRateList;
         })
-//                .flatMap(valutes -> Observable.fromIterable(valutes))
-//                .filter(valute -> {
-//
-//                    Currency instance;
-//                    try {
-//                        instance = Currency.getInstance(valute.charcode);
-//                    } catch (Exception e) {
-//
-//                        return false;
-//                    }
-//                    return Currency.getAvailableCurrencies().contains(instance);
-//                })
 
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(v -> {
                     currentRateList = v;
-
-//                    RxTextView.textChanges(editText)
-//
-//                            .subscribe(charSequence -> {
-//                                for (Valute valute : currentRateList) {
-//
-//                                    valute.name = charSequence.toString();
-//
-//                                }
-////                                adapter.notifyAdapterItemChanged(2);
-//
-//                                adapter.notifyAdapterItemRangeChanged(0,currentRateList.size());
-//                            });
-
                     showValuteRates(currentRateList);
                     Timber.i(String.valueOf(v));
                 }, Throwable::printStackTrace);
@@ -381,7 +429,11 @@ public class MainActivity extends AppCompatActivity {
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .doOnComplete(() -> adapter.setNewList(currentRateListRx))
-                .map(valute -> new RxCalcItem(this, valute))
+                .map(valute -> {
+                    RxCalcItem rxCalcItem = new RxCalcItem(this, valute);
+                    Timber.i(String.valueOf(rxCalcItem.getIdentifier()));
+                    return rxCalcItem;
+                })
                 .map(rxCalcItem -> {
                     rxCalcItem.withSelectable(true);
                     return rxCalcItem;
@@ -395,7 +447,8 @@ public class MainActivity extends AppCompatActivity {
 //        currentCalcItemHolder = new ArrayList();
 //        currentCalcItem = new CalcItem(currentRateList);
 //
-//
+//            //we make sure the new items are displayed properly
+
 //        currentCalcItemHolder.add(currentCalcItem);
 //        adapter.setNewList(currentCalcItemHolder);
 
@@ -633,17 +686,69 @@ public class MainActivity extends AppCompatActivity {
     //change all valute item list by input valute and value
     public void updateCalculatorList(int skipPosition, String value, Valute currVal){
 
-        for (int i = 0; i < currentRateListRx.size(); i++) {
+        Observable.fromIterable(currentRateListRx)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .filter(rxCalcItem -> !rxCalcItem.isSelected())
+                .subscribe(rxCalcItem -> {
+                    String calculate = Helper.calculate(value, currVal, rxCalcItem.currentValute);
+                    Timber.i("updateCalculatorList: %s",calculate);
+                    rxCalcItem.withValue(calculate);
 
-            if (i!=skipPosition){
 
-                RxCalcItem rxCalcItem = currentRateListRx.get(i);
-                Valute outValute = rxCalcItem.currentValute;
-                rxCalcItem.withValue(Helper.calculate(value,currVal,outValute));
-                adapter.notifyAdapterItemChanged(i);
-            }
+                    adapter.notifyAdapterItemRangeChanged(0,skipPosition);
+                    adapter.notifyAdapterItemRangeChanged(skipPosition+1,currentRateListRx.size()-skipPosition);
+
+//                    adapter.notifyAdapterItemRangeChanged(skipPosition+1,currentRateListRx.size());
+
+                }, Throwable::printStackTrace);
+
+
+
+
+//        for (int i = 0; i < currentRateListRx.size(); i++) {
+
+//            if (i==2){
+//
+//                RxCalcItem rxCalcItem = currentRateListRx.get(i);
+//                Valute outValute = rxCalcItem.currentValute;
+//                rxCalcItem.withValue(Helper.calculate(value,currVal,outValute));
+//                adapter.notifyAdapterItemChanged(i);
+//
+//            }
+
+
+//            List<RxCalcItem> adapterItems = adapter.getAdapterItems();
+//            Observable.fromIterable(adapterItems)
+//                    .observeOn(AndroidSchedulers.mainThread())
+//                    .subscribeOn(Schedulers.io())
+//                    .filter(rxCalcItem -> !rxCalcItem.isSelected())
+//                    .doOnComplete(() -> {adapter.notifyDataSetChanged();})
+//                    .doOnNext(rxCalcItem -> {
+//                        Timber.i("do on next: %s",rxCalcItem.getTitle().getText());
+//                        String calculate = Helper.calculate(value, currVal, rxCalcItem.currentValute);
+//                        Timber.i("Calculate %s", calculate);
+//                        rxCalcItem.withValue(calculate);
+//                    })
+//                    .subscribe(rxCalcItem ->{
+//
+//                        String name = rxCalcItem.currentValute.name;
+//                        String val = rxCalcItem.getValue().getText();
+//
+//
+//                        Timber.i("updateCalculatorList: %s %s", name, val);
+//
+//                        int position = adapter.getPosition(rxCalcItem);
+//
+//                        Timber.i("position %d", position);
+//
+////                        adapter.notifyItemChanged();
+////                        adapter.not
+//                   },Throwable::printStackTrace);
         }
-    }
+
+
+//    }
 
 
     void getBitcois() {
@@ -653,6 +758,8 @@ public class MainActivity extends AppCompatActivity {
                     Timber.i("getBitcois: %s", example);
                 });
     }
+
+
 
     public void updateAnotherAdapter(int pos) {
 
@@ -669,4 +776,50 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+
+    public void observEditText(Observable<CharSequence> editTextObservable) {
+//        Disposable subscribe = editTextObservable.subscribe();
+//
+//        CompositeDisposable compositeDisposable = new CompositeDisposable();
+//        compositeDisposable.add(subscribe);
+//        compositeDisposable.
+    }
+
+
+    @Override
+    public boolean itemTouchOnMove(int oldPosition, int newPosition) {
+        Collections.swap(adapter.getAdapterItems(), oldPosition, newPosition); // change position
+        adapter.notifyAdapterItemMoved(oldPosition, newPosition);
+        return true;
+    }
+
+    /**
+     * Our ActionBarCallBack to showcase the CAB
+     */
+    class ActionBarCallBack implements ActionMode.Callback {
+
+        @Override
+        public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+
+            Timber.i("onActionItemClicked:ActionBarCallBack ");
+            //logic if an item was clicked
+            //return false as we want default behavior to go on
+            return false;
+        }
+
+        @Override
+        public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+            return true;
+        }
+
+        @Override
+        public void onDestroyActionMode(ActionMode mode) {
+        }
+
+        @Override
+        public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+            return false;
+        }
+    }
+
 }

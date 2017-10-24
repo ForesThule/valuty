@@ -58,6 +58,7 @@ public class ThisApp extends Application {
                             " method: " + element.getMethodName();
                 }
             });
+
         }
     }
 

@@ -77,13 +77,15 @@ public class Helper {
 
     public static String calculate(String input, Valute inpValute, Valute outValute) {
 
+//        Timber.v("calculate() called with: " + "input = [" + input + "], inpValute = [" + inpValute + "], outValute = [" + outValute + "]");
+
         String value = input;
 
         if (value.equals("")){
             return "";
         }
 
-        Timber.i(inpValute.toString());
+//        Timber.i(inpValute.toString());
 
         Double doubleValue = Double.parseDouble(value);
         BigDecimal decValue = BigDecimal.valueOf(doubleValue);
@@ -105,9 +107,9 @@ public class Helper {
 
         BigDecimal divide = inRubles.divide(outInRubles, BigDecimal.ROUND_HALF_UP).setScale(2, BigDecimal.ROUND_HALF_UP);
 
-        Timber.i("calculate: %s %s", inValuteDec, outValuteDec);
-
-        Timber.i("calculate: %s", divide);
+//        Timber.i("calculate: %s %s", inValuteDec, outValuteDec);
+//
+//        Timber.i("calculate: %s", divide);
 
         return divide.toString();
     }
