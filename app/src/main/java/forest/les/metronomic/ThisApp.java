@@ -12,8 +12,7 @@ import forest.les.metronomic.model.ValCurs;
 import forest.les.metronomic.network.api.BitcoinApi;
 import forest.les.metronomic.network.api.CbrApi;
 import forest.les.metronomic.util.Helper;
-import io.realm.Realm;
-import io.realm.RealmConfiguration;
+
 import timber.log.Timber;
 
 /**

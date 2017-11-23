@@ -13,7 +13,7 @@ import com.jakewharton.rxbinding2.widget.RxTextView;
 
 import java.util.List;
 
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 import forest.les.metronomic.R;
 import forest.les.metronomic.model.Valute;
@@ -73,8 +73,8 @@ public class AnotherAdapter extends RecyclerView.Adapter<AnotherAdapter.ViewHold
     }
 
     class ViewHolder extends RecyclerView.ViewHolder {
-        @Bind(R.id.editTextViewItem) EditText editText;
-        @Bind(R.id.textViewItem) TextView textView;
+        @BindView(R.id.editTextViewItem) EditText editText;
+        @BindView(R.id.textViewItem) TextView textView;
 
         public ViewHolder(View itemView) {
             super(itemView);

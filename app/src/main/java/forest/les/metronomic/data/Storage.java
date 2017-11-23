@@ -21,7 +21,7 @@ import forest.les.metronomic.util.Helper;
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
-import io.realm.Realm;
+
 import timber.log.Timber;
 
 import static android.R.attr.data;

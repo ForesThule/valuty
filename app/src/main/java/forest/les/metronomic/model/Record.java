@@ -9,7 +9,6 @@ import org.simpleframework.xml.Root;
 
 import java.util.List;
 
-import io.realm.RealmObject;
 
 @Root(name = "Record")
 public class Record

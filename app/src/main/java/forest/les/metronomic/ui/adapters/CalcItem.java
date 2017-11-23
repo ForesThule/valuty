@@ -23,7 +23,7 @@ import java.util.Currency;
 import java.util.List;
 import java.util.Locale;
 
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 import forest.les.metronomic.R;
 import forest.les.metronomic.model.Item;
@@ -372,20 +372,20 @@ public class CalcItem extends AbstractItem<CalcItem, CalcItem.ViewHolder> {
 
         private View view;
 
-        @Bind(R.id.et_value_output)
+        @BindView(R.id.et_value_output)
         TextView tv_output;
 
-        @Bind(R.id.spin_valutes_input)
+        @BindView(R.id.spin_valutes_input)
         Spinner spinnerInput;
 
 
-        @Bind(R.id.spin_valutes_output)
+        @BindView(R.id.spin_valutes_output)
         Spinner spinnerOutput;
 
-        @Bind(R.id.et_value)
+        @BindView(R.id.et_value)
         EditText editText;
 
-        @Bind(R.id.rv_calc)
+        @BindView(R.id.rv_calc)
         RecyclerView rvCalc;
 
         public ViewHolder(View view) {

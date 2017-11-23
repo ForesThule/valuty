@@ -35,7 +35,7 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 import forest.les.metronomic.R;
 import forest.les.metronomic.model.Item;
@@ -333,10 +333,10 @@ public class RxCalcItem extends AbstractItem<RxCalcItem, RxCalcItem.ViewHolder> 
 
         public View view;
 
-        @Bind(R.id.valute_value)
+        @BindView(R.id.valute_value)
         EditText valute_value;
 
-        @Bind(R.id.valute_name)
+        @BindView(R.id.valute_name)
         TextView valute_name;
 
 

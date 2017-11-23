@@ -63,9 +63,6 @@
             android:name=".network.MyService"
             android:enabled="true"
             android:exported="true"></service>
-        <service
-            android:name=".network.WorkerIntentService"
-            android:exported="false"></service>
     </application>
 
 </manifest>

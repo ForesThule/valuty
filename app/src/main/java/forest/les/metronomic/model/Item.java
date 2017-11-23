@@ -8,9 +8,6 @@ import org.simpleframework.xml.Root;
 
 import java.util.Currency;
 
-import io.realm.RealmObject;
-import io.realm.annotations.PrimaryKey;
-
 /**
  * Created by root on 04.06.17.
  */

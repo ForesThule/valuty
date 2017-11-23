@@ -1,8 +1,8 @@
 //noinspection GradleCompatible
 apply plugin: 'com.android.application'
-apply plugin: 'com.neenbedankt.android-apt'
-apply plugin: 'me.tatarka.retrolambda'
-apply plugin: 'realm-android'
+//apply plugin: 'com.neenbedankt.android-apt'
+//apply plugin: 'me.tatarka.retrolambda'
+//apply plugin: 'realm-android'
 
 
 
@@ -13,12 +13,14 @@ repositories {
     maven {
         url  "http://dl.bintray.com/ahmedrizwan/maven"
     }
+    google()
 }
 
 android {
     compileSdkVersion 25
-    buildToolsVersion "25.0.3"
+    buildToolsVersion '26.0.2'
     defaultConfig {
+
         applicationId "forest.les.metronomic"
         minSdkVersion 21
         targetSdkVersion 25
@@ -56,6 +58,25 @@ android {
 }
 
 dependencies {
+
+//            implementation project(':library')
+
+//    debugImplementation 'com.example.android:app-magic:12.3'
+
+
+    def lib = "25.3.1"
+
+    implementation  "com.android.support:appcompat-v7:${lib}"
+    implementation  "com.android.support:recyclerview-v7:${lib}"
+    implementation  "com.android.support:cardview-v7:${lib}"
+    implementation  "com.android.support:design:${lib}"
+
+    //noinspection GradleCompatible
+    compile 'com.android.support:recyclerview-v7:25.3.1'
+    compile 'com.android.support:support-vector-drawable:25.3.1'
+//    compile 'com.android.support:appcompat-v7:25.3.1'
+    compile 'com.android.support:cardview-v7:25.3.1'
+//    compile 'com.android.support:design:25.3.1'
 
 
     compile 'com.github.ganfra:material-spinner:1.1.1'
@@ -106,9 +127,9 @@ dependencies {
 
     compile 'com.squareup.moshi:moshi:1.5.0'
 
-//    compile 'com.jakewharton:butterknife:8.8.1'
-//    annotationProcessor 'com.jakewharton:butterknife-compiler:8.8.1'
-    compile'com.jakewharton:butterknife:7.0.1'
+    compile 'com.jakewharton:butterknife:8.8.1'
+    annotationProcessor 'com.jakewharton:butterknife-compiler:8.8.1'
+//    compile'com.jakewharton:butterknife:7.0.1'
 
     compile 'com.jakewharton.timber:timber:4.5.1'
 
@@ -140,14 +161,28 @@ dependencies {
     compile 'org.greenrobot:eventbus:3.0.0'
 
 
-    compile('com.mikepenz:fastadapter:2.5.2@aar') {
-        transitive = true
-    }
+    implementation 'com.mikepenz:fastadapter:3.0.0@aar'
+//    implementation  'com.android.support:appcompat-v7:${latestSupportLib}'
+//    implementation  'com.android.support:recyclerview-v7:${latestSupportLib}'
 
-    compile 'com.mikepenz:fastadapter-commons:2.5.2@aar'
-    compile 'com.mikepenz:fastadapter-extensions:2.5.2@aar'
-    compile 'com.mikepenz:materialize:1.0.1@aar'
+//    latestVersion = '3.0.0'
+    implementation 'com.mikepenz:fastadapter-commons:3.0.0@aar'
+    implementation 'com.mikepenz:fastadapter-extensions-expandable:3.0.0@aar'
+//The tiny Materialize library used for its useful helper classes
+    implementation "com.mikepenz:materialize:1.0.1@aar"
 
+    implementation 'com.mikepenz:fastadapter-extensions:3.0.0@aar'
+//    implementation  'com.android.support:design:${25.3.1}'
+//The tiny Materialize library used for its useful helper classes
+//
+//    compile('com.mikepenz:fastadapter:2.5.2@aar') {
+//        transitive = true
+//    }
+//
+//    compile 'com.mikepenz:fastadapter-commons:2.5.2@aar'
+//    compile 'com.mikepenz:fastadapter-extensions:2.5.2@aar'
+//    compile 'com.mikepenz:materialize:1.0.1@aar'
+//
 
 //    compile 'com.github.PhilJay:MPAndroidChart-Realm:v2.0.2@aar'
 //    compile 'com.github.PhilJay:MPAndroidChart:v3.0.2'
@@ -177,12 +212,7 @@ dependencies {
 
     })
 
-    //noinspection GradleCompatible
-    compile 'com.android.support:recyclerview-v7:25.3.1'
-    compile 'com.android.support:support-vector-drawable:25.3.1'
-    compile 'com.android.support:appcompat-v7:25.3.1'
-    compile 'com.android.support:cardview-v7:25.3.1'
-    compile 'com.android.support:design:25.3.1'
+
 
     testCompile 'junit:junit:4.12'
 }

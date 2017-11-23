@@ -3,7 +3,6 @@ package forest.les.metronomic.network.api;
 import forest.les.metronomic.model.ValCurs;
 import forest.les.metronomic.model.ValCursPeriod;
 import forest.les.metronomic.model.Valuta;
-import forest.les.metronomic.model.realm.RealmValCursPeriod;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import retrofit2.Call;
