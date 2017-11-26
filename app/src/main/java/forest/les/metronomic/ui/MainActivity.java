@@ -23,6 +23,7 @@ import com.mikepenz.fastadapter.IItem;
 import com.mikepenz.fastadapter.IItemAdapter;
 import com.mikepenz.fastadapter.adapters.ItemFilter;
 import com.mikepenz.fastadapter.commons.adapters.FastItemAdapter;
+import com.mikepenz.fastadapter.expandable.ExpandableExtension;
 import com.mikepenz.fastadapter.listeners.ClickEventHook;
 import com.mikepenz.fastadapter.listeners.ItemFilterListener;
 import com.mikepenz.fastadapter.listeners.OnClickListener;
@@ -67,7 +68,7 @@ import io.reactivex.schedulers.Schedulers;
 import retrofit2.http.HEAD;
 import timber.log.Timber;
 
-public class MainActivity extends AppCompatActivity implements ItemTouchCallback, ItemFilterListener<SampleItem>{
+public class MainActivity extends AppCompatActivity implements ItemTouchCallback, ItemFilterListener<SampleItem> {
 
 
 //    SomeObserver someObserver = new SomeObserver(getLifecycle(), SomeObserver.Owner.ACTIVITY);
@@ -99,6 +100,7 @@ public class MainActivity extends AppCompatActivity implements ItemTouchCallback
     private ItemFilter itemFilter;
     private CbrApi cbrApi;
     private Observable<Example> btcObservable;
+    private ExpandableExtension<IItem> expandableExtension;
 
 
 //    @Bind(R.id.tollbar_et)
@@ -198,7 +200,8 @@ public class MainActivity extends AppCompatActivity implements ItemTouchCallback
         adapter.withSelectable(true);
         adapter.withMultiSelect(false);
 
-
+        expandableExtension = new ExpandableExtension<>();
+        adapter.addExtension(expandableExtension);
 
 
 //        adapter.getItemFilter().performFiltering("sss");

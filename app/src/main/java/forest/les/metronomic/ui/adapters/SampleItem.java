@@ -1,10 +1,14 @@
 package forest.les.metronomic.ui.adapters;
 
+import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.TextView;
 
+import com.mikepenz.fastadapter.IAdapter;
+import com.mikepenz.fastadapter.IExpandable;
 import com.mikepenz.fastadapter.items.AbstractItem;
+import com.mikepenz.fastadapter.listeners.OnClickListener;
 
 import java.util.List;
 
@@ -12,17 +16,18 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import forest.les.metronomic.R;
 import forest.les.metronomic.model.Valute;
+import timber.log.Timber;
 
-public class SampleItem extends AbstractItem<SampleItem, SampleItem.ViewHolder> {
+public class SampleItem extends AbstractItem<SampleItem, SampleItem.ViewHolder> implements IExpandable<SampleItem,DynamicItem>{
     public String name = "";
     public Valute realmValute;
 
+    private List<DynamicItem> subItems;
+    private OnClickListener<SampleItem> mOnClickListener;
 
 
     public SampleItem(Valute valute) {
-
         realmValute = valute;
-
     }
 
     //The unique ID for this type of item
@@ -79,6 +84,75 @@ public class SampleItem extends AbstractItem<SampleItem, SampleItem.ViewHolder> 
     @Override
     public ViewHolder getViewHolder(View v) {
         return new ViewHolder(v);
+    }
+//
+//    @Override
+//    public SampleItem withOnItemClickListener(OnClickListener<SampleItem> onItemClickListener) {
+////        return super.withOnItemClickListener(onItemClickListener);
+//        mOnClickListener = onItemClickListener;
+//        return this;
+//    }
+
+    //we define a clickListener in here so we can directly animate
+    final private OnClickListener<SampleItem> onClickListener = (v, adapter, item, position) -> {
+        Timber.i("OnClickListener: ");
+        if (item.getSubItems() != null) {
+                if (!item.isExpanded()) {
+
+                    Timber.i("expand %s ",item.isExpanded());
+//                    ViewCompat.animate(v.findViewById(R.id.material_drawer_icon)).rotation(180).start();
+                } else {
+//                    ViewCompat.animate(v.findViewById(R.id.material_drawer_icon)).rotation(0).start();
+                    Timber.i("expand %s ",item.isExpanded());
+
+                }
+            return mOnClickListener == null || mOnClickListener.onClick(v, adapter, item, position);
+        }
+        return mOnClickListener != null && mOnClickListener.onClick(v, adapter, item, position);
+    };
+//
+//    public OnClickListener<SampleItem> getOnClickListener() {
+//        return mOnClickListener;
+//    }
+//    public SampleItem withOnClickListener(OnClickListener<SampleItem> mOnClickListener) {
+//        this.mOnClickListener = mOnClickListener;
+//        return this;
+//    }
+
+    @Override
+    public OnClickListener<SampleItem> getOnItemClickListener() {
+        return onClickListener;
+    }
+
+    /**
+     * we overwrite the item specific click listener so we can automatically animate within the item
+     *
+     * @return
+     */
+
+    @Override
+    public boolean isExpanded() {
+        return false;
+    }
+
+    @Override
+    public SampleItem withIsExpanded(boolean collapsed) {
+        return null;
+    }
+
+    @Override
+    public SampleItem withSubItems(List<DynamicItem> subItems) {
+        return null;
+    }
+
+    @Override
+    public List<DynamicItem> getSubItems() {
+        return null;
+    }
+
+    @Override
+    public boolean isAutoExpanding() {
+        return false;
     }
 
     //The viewHolder used for this item. This viewHolder is always reused by the RecyclerView so scrolling is blazing fast

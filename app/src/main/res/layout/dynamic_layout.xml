@@ -3,19 +3,6 @@
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <ExpandableListView
-        android:id="@+id/valute_first"
-        android:layout_width="match_parent"
-        android:layout_height="10dp" />
 
-    <ExpandableListView
-        android:id="@+id/valute_second"
-        android:layout_width="match_parent"
-        android:layout_height="10dp" />
 
-    <android.support.v17.leanback.widget.picker.DatePicker
-        android:layout_width="wrap_content"
-        android:layout_height="200dp">
-
-    </android.support.v17.leanback.widget.picker.DatePicker>
 </LinearLayout>

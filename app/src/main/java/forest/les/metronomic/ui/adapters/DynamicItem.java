@@ -5,7 +5,10 @@ import android.view.View;
 import android.widget.ExpandableListView;
 import android.widget.TextView;
 
+import com.mikepenz.fastadapter.ISubItem;
 import com.mikepenz.fastadapter.items.AbstractItem;
+
+import org.greenrobot.eventbus.Subscribe;
 
 import java.util.List;
 
@@ -14,7 +17,7 @@ import butterknife.ButterKnife;
 import forest.les.metronomic.R;
 import forest.les.metronomic.model.Valute;
 
-public class DynamicItem extends AbstractItem<DynamicItem, DynamicItem.ViewHolder> {
+public class DynamicItem extends AbstractItem<DynamicItem, DynamicItem.ViewHolder> implements ISubItem<DynamicItem,SampleItem> {
     public String name = "";
     public Valute realmValute;
 
@@ -63,6 +66,16 @@ public class DynamicItem extends AbstractItem<DynamicItem, DynamicItem.ViewHolde
         return new ViewHolder(v);
     }
 
+    @Override
+    public SampleItem getParent() {
+        return null;
+    }
+
+    @Override
+    public DynamicItem withParent(SampleItem parent) {
+        return null;
+    }
+
     //The viewHolder used for this item. This viewHolder is always reused by the RecyclerView so scrolling is blazing fast
     protected static class ViewHolder extends RecyclerView.ViewHolder {
 
@@ -70,11 +83,11 @@ public class DynamicItem extends AbstractItem<DynamicItem, DynamicItem.ViewHolde
 
         TextView name;
 
-        @BindView(R.id.valute_first)
-        ExpandableListView expandableListViewFrs;
-
-        @BindView(R.id.valute_second)
-        ExpandableListView expandableListViewSec;
+//        @BindView(R.id.valute_first)
+//        ExpandableListView expandableListViewFrs;
+//
+//        @BindView(R.id.valute_second)
+//        ExpandableListView expandableListViewSec;
 
         public ViewHolder(View view) {
             super(view);
