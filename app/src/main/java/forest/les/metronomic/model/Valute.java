@@ -39,6 +39,7 @@ public class Valute {
 
 
     public String calculateValue;
+    private ValCursPeriod monthRates;
 
 
     //calculate this -> incoming valute
@@ -88,6 +89,10 @@ public class Valute {
     @Override
     public String toString() {
         return new Gson().toJson(this).toString();
+    }
+
+    public void setMonthRates(ValCursPeriod monthRates) {
+        this.monthRates = monthRates;
     }
 //        @Override
 //        public String toString() {

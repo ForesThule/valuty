@@ -2,7 +2,6 @@ package forest.les.metronomic.ui;
 
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.view.ActionMode;
@@ -13,21 +12,13 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.EditText;
 
-import com.jakewharton.rxbinding2.widget.RxTextView;
-import com.mikepenz.fastadapter.FastAdapter;
-import com.mikepenz.fastadapter.IAdapter;
 import com.mikepenz.fastadapter.IItem;
-import com.mikepenz.fastadapter.IItemAdapter;
 import com.mikepenz.fastadapter.adapters.ItemFilter;
 import com.mikepenz.fastadapter.commons.adapters.FastItemAdapter;
 import com.mikepenz.fastadapter.expandable.ExpandableExtension;
-import com.mikepenz.fastadapter.listeners.ClickEventHook;
 import com.mikepenz.fastadapter.listeners.ItemFilterListener;
-import com.mikepenz.fastadapter.listeners.OnClickListener;
-import com.mikepenz.fastadapter.utils.EventHookUtil;
 import com.mikepenz.fastadapter_extensions.ActionModeHelper;
 import com.mikepenz.fastadapter_extensions.drag.ItemTouchCallback;
 import com.mikepenz.fastadapter_extensions.drag.SimpleDragCallback;
@@ -36,7 +27,6 @@ import com.stephentuso.welcome.WelcomeHelper;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
@@ -45,27 +35,29 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-import butterknife.BindView;
 import butterknife.ButterKnife;
 import forest.les.metronomic.R;
 import forest.les.metronomic.data.Repository;
-import forest.les.metronomic.events.EventDynamicCurse;
+import forest.les.metronomic.model.Record;
 import forest.les.metronomic.model.ValCurs;
+import forest.les.metronomic.model.ValCursPeriod;
 import forest.les.metronomic.model.Valuta;
 import forest.les.metronomic.model.Valute;
 import forest.les.metronomic.model.btc.Example;
 import forest.les.metronomic.network.api.CbrApi;
 import forest.les.metronomic.ui.adapters.CalcItem;
+import forest.les.metronomic.ui.adapters.ExpandableItem;
 import forest.les.metronomic.ui.adapters.RxCalcItem;
 import forest.les.metronomic.ui.adapters.SampleItem;
+import forest.les.metronomic.ui.adapters.SubItem;
 import forest.les.metronomic.util.Helper;
 import io.reactivex.Observable;
+import io.reactivex.Scheduler;
+import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Action;
 import io.reactivex.schedulers.Schedulers;
-import retrofit2.http.HEAD;
 import timber.log.Timber;
 
 public class MainActivity extends AppCompatActivity implements ItemTouchCallback, ItemFilterListener<SampleItem> {
@@ -101,6 +93,8 @@ public class MainActivity extends AppCompatActivity implements ItemTouchCallback
     private CbrApi cbrApi;
     private Observable<Example> btcObservable;
     private ExpandableExtension<IItem> expandableExtension;
+    private ValCursPeriod valCursPeriod = new ValCursPeriod();
+    private List<ValCursPeriod> periodList = new ArrayList<>();
 
 
 //    @Bind(R.id.tollbar_et)
@@ -134,8 +128,8 @@ public class MainActivity extends AppCompatActivity implements ItemTouchCallback
         new MaterializeBuilder().withActivity(this).build();
 
 
-        Repository repository = new Repository();
-        repository.getdata();
+//        Repository repository = new Repository();
+//        repository.getdata();
 
 //        welcomeScreen = new WelcomeHelper(this, SplashActivity.class);
 //        welcomeScreen.forceShow();
@@ -146,22 +140,22 @@ public class MainActivity extends AppCompatActivity implements ItemTouchCallback
         getActualData();
     }
 
+    //
+    public void filterAdapter() {
+
+
+//        itemFilter.withFilterPredicate((item, constraint) -> {
+//            Timber.i("filter: ");
+//            SampleItem i =(SampleItem) item;
+//            String s = i.valute.charcode.toLowerCase();
 //
-    public void filterAdapter(){
-
-
-        itemFilter.withFilterPredicate((item, constraint) -> {
-            Timber.i("filter: ");
-            SampleItem i =(SampleItem) item;
-            String s = i.realmValute.charcode.toLowerCase();
-
-
-            String anObject0 = constraint.toString().toLowerCase();
-            String anObject1 = constraint.toString().toLowerCase();
-            String anObject2 = constraint.toString().toLowerCase();
-            return s.equals("USD".toLowerCase())||s.equals("EUR".toLowerCase())|| s.equals("RUB".toLowerCase());
-        });
-
+//
+//            String anObject0 = constraint.toString().toLowerCase();
+//            String anObject1 = constraint.toString().toLowerCase();
+//            String anObject2 = constraint.toString().toLowerCase();
+//            return s.equals("USD".toLowerCase())||s.equals("EUR".toLowerCase())|| s.equals("RUB".toLowerCase());
+//        });
+//
 
         Timber.i("filterAdapter: ");
 
@@ -248,6 +242,8 @@ public class MainActivity extends AppCompatActivity implements ItemTouchCallback
                 .observeOn(AndroidSchedulers.mainThread());
 
 
+//        Single<ValCursPeriod> singlePeriod =
+
         Observable.zip(valutaFullObservable, currentObservable, btcObservable, (valuta, valCurs, example) -> {
 
             List<Valute> currentRateList = valCurs.valute;
@@ -272,17 +268,26 @@ public class MainActivity extends AppCompatActivity implements ItemTouchCallback
 
             return currentRateList;
         })
-
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
+                .doOnComplete(this::getPeriodsRates)
                 .subscribe(v -> {
                     currentRateList = v;
-
-                    showValuteRates(currentRateList);
-
                     Timber.i(String.valueOf(v));
                 }, Throwable::printStackTrace);
+    }
 
+    private void getPeriodsRates() {
+        Observable.fromIterable(currentRateList)
+                .flatMap(valute -> cbrApi.getPeriodRx(Helper.getMonthAgoTime(), Helper.getActualTime(), valute.id)
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                )
+                .doOnComplete(() -> showValuteRates(currentRateList))
+                .subscribe(valCursPeriod1 -> {
+                    Timber.i("getPeriodsRates: %s",valCursPeriod1.ID);
+                    periodList.add(valCursPeriod1);
+                },throwable -> Timber.e(throwable,"getPeriodsRates: %s",throwable.getLocalizedMessage()));
     }
 
 
@@ -334,19 +339,12 @@ public class MainActivity extends AppCompatActivity implements ItemTouchCallback
 
 
     public void getCurrentValuteCurses() {
-
         if (null == currentRateList) {
-
             getActualData();
-
         } else {
             showValuteRates(currentRateList);
         }
-
-
     }
-
-
 
     public void showValuteRates(List<Valute> currentRateList) {
 
@@ -360,22 +358,45 @@ public class MainActivity extends AppCompatActivity implements ItemTouchCallback
 
 
         Observable.fromIterable(currentRateList)
-
                 .map(valute -> {
 //                    Currency.getInstance(valute.charcode);
                     Valute newVal = valute;
-                    Timber.i("VALUTE CONTROL: %s", newVal);
+                    Timber.i("show valute rates: %s", newVal.name);
                     return newVal;
                 })
                 .map(valute -> {
 
                     String replace = valute.value.replace(",", ".");
-
                     valute.value = replace;
 
-                    SampleItem sampleItem = new SampleItem(valute);
+                    ExpandableItem sampleItem = new ExpandableItem(valute);
+                    List<SubItem> subItems = new ArrayList<>();
 
-//                    sampleItem.value = Double.parseDouble(replace);
+                    String id = valute.id;
+
+                    SubItem subItem = new SubItem();
+
+                    for (ValCursPeriod valCursPeriod : periodList) {
+                        if (valCursPeriod.ID.equals(id)) {
+                            List<Record> records = valCursPeriod.records;
+                            subItem.records = records;
+                        }
+                    }
+                    subItems.add(subItem);
+                    sampleItem.withSubItems(subItems);
+
+//                    SampleItem sampleItem = new SampleItem(valute);
+//                    List<DynamicItem> subitems = new ArrayList<>();
+//
+//                    DynamicItem e = new DynamicItem(valute);
+//                    DynamicItem dynamicItem = e.withParent(sampleItem);
+//                    subitems.add(dynamicItem);
+//
+//                    sampleItem.withSubItems(subitems);
+//                    sampleItem.withIsExpanded(true);
+//
+//                    Timber.i("showValuteRates: %s",sampleItem);
+////                    sampleItem.value = Double.parseDouble(replace);
 
                     return sampleItem;
                 })
@@ -384,21 +405,17 @@ public class MainActivity extends AppCompatActivity implements ItemTouchCallback
                     filterAdapter();
                 })
                 .subscribe(e -> {
-                    if (e.realmValute.charcode.equals("EUR")) {
-                        iItems.set(1, e);
-                    } else if (e.realmValute.charcode.equals("USD")) {
-                        iItems.set(0, e);
-                    }
-//                    else if (e.realmValute.charcode.equals("USD")) {
+//                    if (e.valute.charcode.equals("EUR")) {
+//                        iItems.set(1, e);
+//                    } else if (e.valute.charcode.equals("USD")) {
 //                        iItems.set(0, e);
 //                    }
 
-                    else {
-                        iItems.add(e);
-                    }
 
-                }, Throwable::printStackTrace);
-
+//                    else {
+                    iItems.add(e);
+//                    }
+                }, throwable -> Timber.e("showValuteRates: %s",throwable.getLocalizedMessage()));
     }
 
 
@@ -436,9 +453,8 @@ public class MainActivity extends AppCompatActivity implements ItemTouchCallback
         return divide.toString();
     }
 
-
     //change all valute item list by input valute and value
-    public void updateCalculatorList(int skipPosition, String value, Valute currVal){
+    public void updateCalculatorList(int skipPosition, String value, Valute currVal) {
 
         Observable.fromIterable(currentRateListRx)
                 .subscribeOn(Schedulers.io())
@@ -446,19 +462,19 @@ public class MainActivity extends AppCompatActivity implements ItemTouchCallback
                 .filter(rxCalcItem -> !rxCalcItem.isSelected())
                 .subscribe(rxCalcItem -> {
                     String calculate = Helper.calculate(value, currVal, rxCalcItem.currentValute);
-                    Timber.i("updateCalculatorList: %s",calculate);
+                    Timber.i("updateCalculatorList: %s", calculate);
                     rxCalcItem.withValue(calculate);
 
 
-                    adapter.notifyAdapterItemRangeChanged(0,skipPosition);
-                    adapter.notifyAdapterItemRangeChanged(skipPosition+1,currentRateListRx.size()-skipPosition);
+                    adapter.notifyAdapterItemRangeChanged(0, skipPosition);
+                    adapter.notifyAdapterItemRangeChanged(skipPosition + 1, currentRateListRx.size() - skipPosition);
 
 //                    adapter.notifyAdapterItemRangeChanged(skipPosition+1,currentRateListRx.size());
 
                 }, Throwable::printStackTrace);
 
 
-        }
+    }
 
 
 //    }
@@ -471,7 +487,6 @@ public class MainActivity extends AppCompatActivity implements ItemTouchCallback
                     Timber.i("getBitcois: %s", example);
                 });
     }
-
 
 
     @Subscribe
@@ -511,12 +526,12 @@ public class MainActivity extends AppCompatActivity implements ItemTouchCallback
 
     @Override
     public void itemsFiltered(CharSequence constraint, List<SampleItem> results) {
-
-        for (SampleItem result : results) {
-
-            Timber.i("itemsFiltered: %s",result);
-
-        }
+//
+//        for (SampleItem result : results) {
+//
+//            Timber.i("itemsFiltered: %s",result);
+//
+//        }
 
 
     }

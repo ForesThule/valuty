@@ -20,13 +20,10 @@ import forest.les.metronomic.model.Valute;
 public class DynamicItem extends AbstractItem<DynamicItem, DynamicItem.ViewHolder> implements ISubItem<DynamicItem,SampleItem> {
     public String name = "";
     public Valute realmValute;
-
-
-
+    private SampleItem parent;
+    
     public DynamicItem(Valute valute) {
-
         realmValute = valute;
-
     }
 
     //The unique ID for this type of item
@@ -46,18 +43,12 @@ public class DynamicItem extends AbstractItem<DynamicItem, DynamicItem.ViewHolde
     public void bindView(ViewHolder viewHolder, List<Object> payloads) {
         //call super so the selection is already handled for you
         super.bindView(viewHolder, payloads);
-
-
-        //set the text for the description or hide
-
     }
 
     //reset the view here (this is an optional method, but recommended)
     @Override
     public void unbindView(ViewHolder holder) {
         super.unbindView(holder);
-
-
     }
 
     //Init the viewHolder for this Item
@@ -68,12 +59,13 @@ public class DynamicItem extends AbstractItem<DynamicItem, DynamicItem.ViewHolde
 
     @Override
     public SampleItem getParent() {
-        return null;
+        return parent;
     }
 
     @Override
     public DynamicItem withParent(SampleItem parent) {
-        return null;
+        this.parent = parent;
+        return this;
     }
 
     //The viewHolder used for this item. This viewHolder is always reused by the RecyclerView so scrolling is blazing fast
@@ -81,7 +73,7 @@ public class DynamicItem extends AbstractItem<DynamicItem, DynamicItem.ViewHolde
 
         private View view;
 
-        TextView name;
+        private TextView name;
 
 //        @BindView(R.id.valute_first)
 //        ExpandableListView expandableListViewFrs;

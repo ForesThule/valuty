@@ -28,6 +28,6 @@ public interface CbrApi {
     Call<ValCursPeriod> getRatesOnPeriod(@Query("date_req1") String date_req1, @Query("date_req2") String date_req2, @Query("VAL_NM_RQ") String VAL_NM_RQ);
 
     @GET("/scripts/XML_dynamic.asp")
-    Single<ValCursPeriod> getPeriodRx(@Query("date_req1") String date_req1, @Query("date_req2") String date_req2, @Query("VAL_NM_RQ") String VAL_NM_RQ);
+    Observable<ValCursPeriod> getPeriodRx(@Query("date_req1") String date_req1, @Query("date_req2") String date_req2, @Query("VAL_NM_RQ") String VAL_NM_RQ);
 
 }

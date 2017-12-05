@@ -2,6 +2,7 @@ package forest.les.metronomic.util;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 
 import forest.les.metronomic.BuildConfig;
@@ -73,6 +74,14 @@ public class Helper {
     public static String getActualTime() {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd.MM.yyyy");
         return  simpleDateFormat.format(new Date());
+    }
+
+    public static String getMonthAgoTime() {
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd.MM.yyyy");
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.MONTH, -1);
+        Date result = cal.getTime();
+        return  simpleDateFormat.format(result);
     }
 
     public static String calculate(String input, Valute inpValute, Valute outValute) {

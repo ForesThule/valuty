@@ -17,7 +17,7 @@ public class ValCursPeriod {
     public String date2;
 
     @Attribute(required = false)
-    private String ID;
+    public String ID = "";
 
     @Attribute(name = "name", required = false, empty = "")
     public String name;

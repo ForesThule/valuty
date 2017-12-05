@@ -172,6 +172,11 @@ dependencies {
     implementation "com.mikepenz:materialize:1.0.1@aar"
 
     implementation 'com.mikepenz:fastadapter-extensions:3.0.0@aar'
+
+    compile('com.mikepenz:materialdrawer:6.0.0@aar') {
+        transitive = true
+        exclude group: "com.mikepenz"
+    }
 //    implementation  'com.android.support:design:${25.3.1}'
 //The tiny Materialize library used for its useful helper classes
 //
