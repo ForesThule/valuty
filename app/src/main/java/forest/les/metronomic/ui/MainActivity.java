@@ -31,9 +31,13 @@ import org.greenrobot.eventbus.Subscribe;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 
 import butterknife.ButterKnife;
 import forest.les.metronomic.R;
@@ -44,6 +48,7 @@ import forest.les.metronomic.model.ValCursPeriod;
 import forest.les.metronomic.model.Valuta;
 import forest.les.metronomic.model.Valute;
 import forest.les.metronomic.model.btc.Example;
+import forest.les.metronomic.network.api.ApiCoinDesc;
 import forest.les.metronomic.network.api.CbrApi;
 import forest.les.metronomic.ui.adapters.CalcItem;
 import forest.les.metronomic.ui.adapters.ExpandableItem;
@@ -91,10 +96,15 @@ public class MainActivity extends AppCompatActivity implements ItemTouchCallback
     private ItemTouchHelper touchHelper;
     private ItemFilter itemFilter;
     private CbrApi cbrApi;
+    private ApiCoinDesc apiCoinDesc;
     private Observable<Example> btcObservable;
     private ExpandableExtension<IItem> expandableExtension;
     private ValCursPeriod valCursPeriod = new ValCursPeriod();
     private List<ValCursPeriod> periodList = new ArrayList<>();
+    private Valute btc;
+    private Valute rub;
+    private Observable<Valuta> valutaFullObservable;
+    private Observable<ValCurs> currentObservable;
 
 
 //    @Bind(R.id.tollbar_et)
@@ -195,6 +205,7 @@ public class MainActivity extends AppCompatActivity implements ItemTouchCallback
         adapter.withMultiSelect(false);
 
         expandableExtension = new ExpandableExtension<>();
+        expandableExtension.withOnlyOneExpandedItem(true);
         adapter.addExtension(expandableExtension);
 
 
@@ -231,13 +242,15 @@ public class MainActivity extends AppCompatActivity implements ItemTouchCallback
     private void getActualData() {
 
         cbrApi = Helper.getCbrApi();
+        apiCoinDesc = Helper.getApiCoinDesc();
+
         btcObservable = Helper.getBtcApi().getData();
 
-        Observable<Valuta> valutaFullObservable = cbrApi.getValutesFullData()
+        valutaFullObservable = cbrApi.getValutesFullData()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread());
 
-        Observable<ValCurs> currentObservable = cbrApi.getCurrentRates(Helper.getActualTime())
+        currentObservable = cbrApi.getCurrentRates(Helper.getActualTime())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread());
 
@@ -248,20 +261,22 @@ public class MainActivity extends AppCompatActivity implements ItemTouchCallback
 
             List<Valute> currentRateList = valCurs.valute;
 
-            Valute rub = new Valute();
+            rub = new Valute();
             rub.value = "1";
             rub.nominal = "1";
             rub.numcode = "99999";
             rub.name = "Российский рубль";
             rub.charcode = "RUB";
+            rub.id = "RUB";
             currentRateList.add(3, rub);
 
-            Valute btc = new Valute();
+            btc = new Valute();
             btc.value = example.getRUB().getLast().toString();
             btc.nominal = "1";
             btc.numcode = "66666";
             btc.name = "Bitcoin";
             btc.charcode = "BTC";
+            btc.id = "BTC";
             currentRateList.add(4, btc);
 
             Timber.i("getActualData: %s", btc);
@@ -277,17 +292,81 @@ public class MainActivity extends AppCompatActivity implements ItemTouchCallback
                 }, Throwable::printStackTrace);
     }
 
+    private void getBtcMonthHistory() {
+
+        apiCoinDesc.getBitcoinRAtesByMonth()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .map(coinDescData -> {
+                    Map<String, Float> bpi = coinDescData.bpi;
+                    ArrayList<String> sortList = new ArrayList<>(bpi.keySet());
+                    Collections.sort(sortList);
+
+                    ValCursPeriod valCursPeriod = new ValCursPeriod();
+                    valCursPeriod.ID = "BTC";
+                    valCursPeriod.date1 = sortList.get(0);
+                    valCursPeriod.date2 = sortList.get(sortList.size()-1);
+
+                    valCursPeriod.records = new ArrayList<>();
+
+                    for (Map.Entry<String, Float> entry : bpi.entrySet()) {
+                        Record e = new Record();
+                        e.date = entry.getKey();
+                        e.setValue(String.valueOf(entry.getValue()));
+                        valCursPeriod.records.add(e);
+                    }
+                    return valCursPeriod;
+                })
+                .subscribe(valCursPeriodBtc -> {
+
+                    periodList.add(valCursPeriodBtc);
+                    showValuteRates(currentRateList);
+
+                },throwable -> Timber.e(throwable,
+                        "getActualData: %s",throwable));
+    }
+
     private void getPeriodsRates() {
+
         Observable.fromIterable(currentRateList)
                 .flatMap(valute -> cbrApi.getPeriodRx(Helper.getMonthAgoTime(), Helper.getActualTime(), valute.id)
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                 )
-                .doOnComplete(() -> showValuteRates(currentRateList))
+                .map(valCursPeriod1 -> {
+
+                    List<Record> records = valCursPeriod1.records;
+                    List<Record> filteredRecords = new ArrayList<>();
+
+                    if (null!=records){
+
+                    for (int i = 0; i < records.size(); i++) {
+                        if (i % 3 == 0) {
+                            Record record = records.get(i);
+
+                            Calendar calendar = Calendar.getInstance();
+
+                            SimpleDateFormat format = new SimpleDateFormat("dd/mm/yyyy");
+                            Date date = format.parse(record.date.replace(".", "/"));
+                            Timber.i("getPeriodsRates: %s", date);
+
+                            filteredRecords.add(record);
+
+                        }
+                    }
+
+                    }
+
+                    valCursPeriod1.records = filteredRecords;
+                    return valCursPeriod1;
+                })
+//                .doOnComplete(() -> showValuteRates(currentRateList))
+                .doOnComplete(this::getBtcMonthHistory)
+                .toList()
                 .subscribe(valCursPeriod1 -> {
-                    Timber.i("getPeriodsRates: %s",valCursPeriod1.ID);
-                    periodList.add(valCursPeriod1);
-                },throwable -> Timber.e(throwable,"getPeriodsRates: %s",throwable.getLocalizedMessage()));
+                            periodList = valCursPeriod1;
+                        },
+                        throwable -> Timber.e(throwable,"getPeriodsRates: %s",throwable.getLocalizedMessage()));
     }
 
 

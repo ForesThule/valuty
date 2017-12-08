@@ -7,6 +7,7 @@ import java.util.Date;
 
 import forest.les.metronomic.BuildConfig;
 import forest.les.metronomic.model.Valute;
+import forest.les.metronomic.network.api.ApiCoinDesc;
 import forest.les.metronomic.network.api.BitcoinApi;
 import forest.les.metronomic.network.api.CbrApi;
 import okhttp3.OkHttpClient;
@@ -46,7 +47,27 @@ public class Helper {
                 .build();
 
         return retrofit.create(CbrApi.class);
-    };
+    }
+
+    public static ApiCoinDesc getApiCoinDesc(){
+        HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
+        interceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+        OkHttpClient.Builder client = new OkHttpClient.Builder();
+
+        if (BuildConfig.DEBUG) {
+            client.addNetworkInterceptor(interceptor);
+        }
+        //    https://api.coindesk.com/v1/bpi/historical/close.json
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://api.coindesk.com/") //Базовая часть адреса
+                .addConverterFactory(GsonConverterFactory.create()) //Конвертер, необходимый для преобразования JSON'а в объекты
+                .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+//                .client(client.build())
+                .build();
+
+        return retrofit.create(ApiCoinDesc.class);
+    }
 
     public static BitcoinApi getBtcApi(){
 

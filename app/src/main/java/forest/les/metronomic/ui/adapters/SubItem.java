@@ -119,44 +119,42 @@ public class SubItem<Parent extends IItem & IExpandable & ISubItem & IClickable>
 
         Timber.i("bindView: %s",sortedList);
 
-        String minimumValue = sortedList.get(0).getValue();
-        float minFloat = Float.parseFloat(minimumValue.replace(",", "."));
+        if (sortedList.size()>0) {
+            String minimumValue = sortedList.get(0).getValue();
+            float minFloat = Float.parseFloat(minimumValue.replace(",", "."));
 
-        String maximumValue = sortedList.get(sortedList.size()-1).getValue();
-        float maxFloat = Float.parseFloat(maximumValue.replace(",", "."));
+            String maximumValue = sortedList.get(sortedList.size() - 1).getValue();
+            float maxFloat = Float.parseFloat(maximumValue.replace(",", "."));
 
-        lineChartView.setAxisBorderValues(minFloat,maxFloat);
 
-        LineSet set = new LineSet();
-
-        try {
-            for (Record record : records) {
-                set.addPoint(record.getDate(), Float.parseFloat(record.getValue().replace(",",".")));
+            Timber.i("bindView: minimumValue %s maximumValue %s", minimumValue, maximumValue);
+//        lineChartView.setAxisBorderValues(minFloat,maxFloat);
+            if (maxFloat>minFloat){
+                lineChartView.setAxisBorderValues(minFloat, maxFloat);
             }
-        } catch (Exception e){
-        set.addPoint("LABEL",100);
-        set.addPoint("LABEL",200);
-            e.printStackTrace();
+
+
+            LineSet set = new LineSet();
+
+            try {
+                for (Record record : records) {
+                    set.addPoint(record.getDate(), Float.parseFloat(record.getValue().replace(",", ".")));
+                }
+            } catch (Exception e) {
+                set.addPoint("LABEL", 100);
+                set.addPoint("LABEL", 200);
+                e.printStackTrace();
+            }
+
+            lineChartView.addData(set);
+            lineChartView.show();
         }
-//
-//        set.addPoint("LABEL",100);
-//        set.addPoint("LABEL",300);
-//        set.addPoint("LABEL",50);
-//        set.addPoint("LABEL",100);
-//
-
-        lineChartView.addData(set);
-        lineChartView.show();
-
-
     }
 
     @Override
     public void unbindView(ViewHolder holder) {
         super.unbindView(holder);
         holder.lineChartView.reset();
-
-
     }
 
     @Override
