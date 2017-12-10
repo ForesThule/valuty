@@ -120,12 +120,12 @@ public class SubItem<Parent extends IItem & IExpandable & ISubItem & IClickable>
         Timber.i("bindView: %s",sortedList);
 
         if (sortedList.size()>0) {
+
             String minimumValue = sortedList.get(0).getValue();
             float minFloat = Float.parseFloat(minimumValue.replace(",", "."));
 
             String maximumValue = sortedList.get(sortedList.size() - 1).getValue();
             float maxFloat = Float.parseFloat(maximumValue.replace(",", "."));
-
 
             Timber.i("bindView: minimumValue %s maximumValue %s", minimumValue, maximumValue);
 //        lineChartView.setAxisBorderValues(minFloat,maxFloat);
@@ -138,7 +138,7 @@ public class SubItem<Parent extends IItem & IExpandable & ISubItem & IClickable>
 
             try {
                 for (Record record : records) {
-                    set.addPoint(record.getDate(), Float.parseFloat(record.getValue().replace(",", ".")));
+                    set.addPoint("X", Float.parseFloat(record.getValue().replace(",", ".")));
                 }
             } catch (Exception e) {
                 set.addPoint("LABEL", 100);

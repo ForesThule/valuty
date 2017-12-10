@@ -51,11 +51,14 @@ import forest.les.metronomic.model.btc.Example;
 import forest.les.metronomic.network.api.ApiCoinDesc;
 import forest.les.metronomic.network.api.CbrApi;
 import forest.les.metronomic.ui.adapters.CalcItem;
+import forest.les.metronomic.ui.adapters.CalcItem_;
+import forest.les.metronomic.ui.adapters.CalculatorAdapter;
 import forest.les.metronomic.ui.adapters.ExpandableItem;
 import forest.les.metronomic.ui.adapters.RxCalcItem;
 import forest.les.metronomic.ui.adapters.SampleItem;
 import forest.les.metronomic.ui.adapters.SubItem;
 import forest.les.metronomic.util.Helper;
+import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Scheduler;
 import io.reactivex.Single;
@@ -105,6 +108,7 @@ public class MainActivity extends AppCompatActivity implements ItemTouchCallback
     private Valute rub;
     private Observable<Valuta> valutaFullObservable;
     private Observable<ValCurs> currentObservable;
+    private LinearLayoutManager layoutManager;
 
 
 //    @Bind(R.id.tollbar_et)
@@ -222,7 +226,8 @@ public class MainActivity extends AppCompatActivity implements ItemTouchCallback
         android.app.ActionBar supportActionBar = getActionBar();
 
         recycler.setAdapter(adapter);
-        recycler.setLayoutManager(new LinearLayoutManager(this));
+        layoutManager = new LinearLayoutManager(this);
+        recycler.setLayoutManager(layoutManager);
         recycler.addItemDecoration(new DividerItemDecoration(this, 1));
         recycler.setItemAnimator(new DefaultItemAnimator());
     }
@@ -371,24 +376,66 @@ public class MainActivity extends AppCompatActivity implements ItemTouchCallback
 
 
     private void calcuLate() {
+
         adapter.clear();
+
 
         currentRateListMod = new ArrayList<>(currentRateList);
 
-        Observable.fromIterable(currentRateListMod)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .doOnComplete(() -> adapter.setNewList(currentRateListRx))
-                .map(valute -> {
-                    RxCalcItem rxCalcItem = new RxCalcItem(this, valute);
-                    Timber.i(String.valueOf(rxCalcItem.getIdentifier()));
-                    return rxCalcItem;
-                })
-                .map(rxCalcItem -> {
-                    rxCalcItem.withSelectable(true);
-                    return rxCalcItem;
-                })
-                .subscribe(currentRateListRx::add, Throwable::printStackTrace);
+
+
+        CalculatorAdapter calculatorAdapter = new CalculatorAdapter(this);
+        calculatorAdapter.setData(filterBeforCalculate(currentRateList));
+        layoutManager = new LinearLayoutManager(this);
+        recycler.setLayoutManager(layoutManager);
+        recycler.setAdapter(calculatorAdapter);
+
+
+
+//        CalcItem_ calcItem_ = new CalcItem_(currentRateListMod);
+//        adapter.clear();
+//        ArrayList items = new ArrayList();
+//        items.add(calcItem_);
+//        adapter.setNewList(items);
+
+
+
+
+
+
+
+//        Observable.fromIterable(currentRateListMod)
+//                .subscribeOn(Schedulers.io())
+//                .observeOn(AndroidSchedulers.mainThread())
+//                .doOnComplete(() -> adapter.setNewList(currentRateListRx))
+//                .map(valute -> {
+//                    RxCalcItem rxCalcItem = new RxCalcItem(this, valute);
+//                    Timber.i(String.valueOf(rxCalcItem.getIdentifier()));
+//                    return rxCalcItem;})
+//                .map(rxCalcItem -> {
+//                    rxCalcItem.withSelectable(true);
+//                    return rxCalcItem;
+//                })
+//                .subscribe(
+//                        currentRateListRx::add,
+//                        Throwable::printStackTrace
+//                );
+    }
+
+    private List<Valute> filterBeforCalculate(List<Valute> currentRateList) {
+        List<Valute> result = new ArrayList<>();
+
+        for (Valute valute : currentRateList) {
+
+            String s = valute.charcode.toLowerCase();
+            boolean usd = s.equals("usd")||s.equals("eur")||s.equals("gbp");
+
+            if (usd){
+                result.add(valute);
+            }
+        }
+
+        return result;
     }
 
 
@@ -618,6 +665,19 @@ public class MainActivity extends AppCompatActivity implements ItemTouchCallback
     @Override
     public void onReset() {
 
+    }
+
+    public void notifyCalculateAdapter(int editedIndex) {
+
+        Timber.i("notifyCalculateAdapter: ");
+        layoutManager.findFirstVisibleItemPosition();
+        layoutManager.findLastVisibleItemPosition();
+        int firstVisiblePosition = layoutManager.findFirstCompletelyVisibleItemPosition();
+        int lastVisiblePosition = layoutManager.findLastCompletelyVisibleItemPosition();
+
+        for (int i = firstVisiblePosition; i == lastVisiblePosition; i++) {
+            Timber.i("notifyCalculateAdapter: %d",editedIndex);
+        }
     }
 
     /**

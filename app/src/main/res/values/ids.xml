@@ -7,4 +7,5 @@
     <item name="calc_rxitem_id" type="id">calc_rxitem</item>
     <item name="fastadapter_sub_item_id" type="id">subitemid</item>
     <item name="fastadapter_expandable_item_id" type="id">expandableitem</item>
+    <item name="calc_sampleitem_id_" type="id">calc_item_id_</item>
 </resources>
