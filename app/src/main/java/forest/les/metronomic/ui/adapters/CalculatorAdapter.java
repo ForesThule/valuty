@@ -13,6 +13,7 @@ import android.widget.TextView;
 
 import com.jakewharton.rxbinding2.widget.RxTextView;
 
+import forest.les.metronomic.util.Helper;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -40,24 +41,14 @@ public class CalculatorAdapter extends RecyclerView.Adapter<CalculatorAdapter.Vi
     int editedIndex;
 
     private TextWatcher watcher = new TextWatcher() {
-        @Override
-        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-        }
-
-        @Override
-        public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-
-        }
-
+        @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+        @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
         @Override
         public void afterTextChanged(Editable s) {
 
             Timber.i("afterTextChanged: %s", s.toString());
 
             notifyOtherValutes(editedIndex);
-
         }
     };
 
@@ -66,7 +57,16 @@ public class CalculatorAdapter extends RecyclerView.Adapter<CalculatorAdapter.Vi
     }
 
     private void notifyOtherValutes(int editedIndex) {
-        activity.notifyCalculateAdapter(editedIndex);
+        for (int i = 0; i < data.size(); i++) {
+            if (i!=editedIndex){
+
+                Valute datum = data.get(i);
+                datum.name = String.valueOf(i);
+                //Helper.
+                notifyItemChanged(i);
+            }
+        }
+        //activity.notifyCalculateAdapter(editedIndex);
     }
 
 
