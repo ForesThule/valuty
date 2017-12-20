@@ -13,6 +13,7 @@ import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
+import android.widget.Toolbar;
 
 import com.mikepenz.fastadapter.IItem;
 import com.mikepenz.fastadapter.adapters.ItemFilter;
@@ -24,6 +25,7 @@ import com.mikepenz.fastadapter_extensions.drag.ItemTouchCallback;
 import com.mikepenz.fastadapter_extensions.drag.SimpleDragCallback;
 import com.mikepenz.materialize.MaterializeBuilder;
 import com.stephentuso.welcome.WelcomeHelper;
+import com.wang.avi.AVLoadingIndicatorView;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -109,6 +111,8 @@ public class MainActivity extends AppCompatActivity implements ItemTouchCallback
     private Observable<Valuta> valutaFullObservable;
     private Observable<ValCurs> currentObservable;
     private LinearLayoutManager layoutManager;
+    private AVLoadingIndicatorView avi;
+    private android.support.v7.widget.Toolbar toolbar;
 
 
 //    @Bind(R.id.tollbar_et)
@@ -154,6 +158,16 @@ public class MainActivity extends AppCompatActivity implements ItemTouchCallback
         getActualData();
     }
 
+    void startAnim(){
+        avi.show();
+        // or avi.smoothToShow();
+    }
+
+    void stopAnim(){
+        avi.hide();
+        // or avi.smoothToHide();
+    }
+
     //
     public void filterAdapter() {
 
@@ -190,12 +204,16 @@ public class MainActivity extends AppCompatActivity implements ItemTouchCallback
 
         navigation = (BottomNavigationView) findViewById(R.id.nav_main);
         recycler = (RecyclerView) findViewById(R.id.recycler);
+        avi = (AVLoadingIndicatorView) findViewById(R.id.avi);
+        toolbar = (android.support.v7.widget.Toolbar) findViewById(R.id.toolbar);
         adapter = new FastItemAdapter();
 
         mActionModeHelper = new ActionModeHelper(adapter, R.menu.navigation, new ActionBarCallBack());
 
         mActionModeHelper.withAutoDeselect(true);
 
+
+        setSupportActionBar(toolbar);
 //        mActionModeHelper.withSupportSubItems(false);
 
         dragCallback = new SimpleDragCallback(this);
@@ -245,6 +263,8 @@ public class MainActivity extends AppCompatActivity implements ItemTouchCallback
 
 
     private void getActualData() {
+
+        startAnim();
 
         cbrApi = Helper.getCbrApi();
         apiCoinDesc = Helper.getApiCoinDesc();
@@ -324,6 +344,7 @@ public class MainActivity extends AppCompatActivity implements ItemTouchCallback
                 })
                 .subscribe(valCursPeriodBtc -> {
 
+                    stopAnim();
                     periodList.add(valCursPeriodBtc);
                     showValuteRates(currentRateList);
 
